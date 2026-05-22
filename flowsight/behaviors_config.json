@@ -1,0 +1,74 @@
+[
+  {
+    "id": "browsing",
+    "name": "Browsing",
+    "zone": "any",
+    "action": "moving",
+    "threshold": 0,
+    "alert": false,
+    "color": "#888888"
+  },
+  {
+    "id": "interested",
+    "name": "Interested",
+    "zone": "product",
+    "action": "dwell",
+    "threshold": 25,
+    "alert": true,
+    "color": "#f59e0b"
+  },
+  {
+    "id": "loitering",
+    "name": "Loitering",
+    "zone": "product",
+    "action": "dwell",
+    "threshold": 90,
+    "alert": true,
+    "color": "#ef4444"
+  },
+  {
+    "id": "checkout_ready",
+    "name": "Checkout ready",
+    "zone": "checkout",
+    "action": "dwell",
+    "threshold": 5,
+    "alert": true,
+    "color": "#22c55e"
+  },
+  {
+    "id": "waiting",
+    "name": "Waiting too long",
+    "zone": "seating",
+    "action": "dwell",
+    "threshold": 180,
+    "alert": true,
+    "color": "#ef4444"
+  },
+  {
+    "id": "staff",
+    "name": "Staff",
+    "zone": "staff",
+    "action": "presence",
+    "threshold": 0,
+    "alert": false,
+    "color": "#f59e0b"
+  },
+  {
+    "id": "idle",
+    "name": "Idle",
+    "zone": "floor",
+    "action": "still",
+    "threshold": 0,
+    "alert": false,
+    "color": "#555555"
+  },
+  {
+    "id": "moving",
+    "name": "Moving",
+    "zone": "floor",
+    "action": "moving",
+    "threshold": 0,
+    "alert": false,
+    "color": "#aaaaaa"
+  }
+]

@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FlowSight</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f8f8fa;--surface:#fff;--surface2:#f3f3f7;--border:#e5e5ea;
+  --text:#111;--muted:#888;--accent:#6366f1;--accent2:#818cf8;
+  --green:#16a34a;--amber:#d97706;--red:#dc2626;--blue:#2563eb;
+  --green-s:#dcfce7;--amber-s:#fef3c7;--red-s:#fee2e2;--blue-s:#dbeafe;
+  --radius:10px;--radius-lg:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+
+/* NAV */
+.nav{height:52px;background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;gap:4px;position:sticky;top:0;z-index:100}
+.brand{font-weight:600;font-size:15px;color:var(--accent);margin-right:18px;display:flex;align-items:center;gap:7px}
+.brand-dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.ntab{padding:6px 12px;border-radius:var(--radius);border:none;background:none;
+  font-size:13px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit}
+.ntab:hover{background:var(--surface2);color:var(--text)}
+.ntab.on{background:var(--surface2);color:var(--accent);font-weight:500}
+.ntab svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.nav-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.pill{display:flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;
+  border-radius:20px;border:1px solid var(--border);color:var(--muted)}
+.dot-live{width:6px;height:6px;border-radius:50%;background:#aaa}
+.dot-live.on{background:var(--green);box-shadow:0 0 5px var(--green)}
+.btn{padding:7px 16px;border-radius:var(--radius);border:1px solid var(--border);
+  background:var(--surface);font-size:13px;font-weight:500;cursor:pointer;
+  font-family:inherit;color:var(--text);transition:all .15s}
+.btn:hover{background:var(--surface2)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn-danger{color:var(--red);border-color:#fca5a5}
+.btn-danger:hover{background:var(--red-s)}
+
+/* PAGES */
+.page{display:none;padding:20px;max-width:1340px;margin:0 auto}
+.page.on{display:block}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.card-hd{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-hd h3{font-size:13px;font-weight:600}
+.card-hd p{font-size:11px;color:var(--muted)}
+.card-bd{padding:16px 18px}
+
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px}
+.kpi-val{font-size:32px;font-weight:600;line-height:1;letter-spacing:-1px}
+.kpi-lbl{font-size:11px;color:var(--muted);margin-top:5px;font-weight:500;text-transform:uppercase;letter-spacing:.4px}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px}
+.g2b{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+
+/* FEED */
+.feed{background:#111;position:relative;min-height:220px;display:flex;align-items:center;justify-content:center}
+.feed canvas{width:100%;display:block}
+.feed-off{text-align:center;color:#555}
+.feed-off svg{width:40px;height:40px;stroke:#444;margin-bottom:8px;display:block;margin:0 auto 8px}
+.feed-off p{font-size:12px}
+.live-badge{position:absolute;top:10px;left:10px;background:#dc2626;color:#fff;
+  font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.8px;display:none}
+.hud-bar{display:flex;gap:20px;padding:10px 16px;border-top:1px solid var(--border);background:var(--surface2)}
+.hud-item{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.hud-n{font-size:18px;font-weight:600;color:var(--text)}
+
+/* ALERTS */
+.alert-list{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto}
+.a-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--radius);border:1px solid var(--border)}
+.a-item.urgent{border-color:#fca5a5;background:var(--red-s)}
+.a-time{font-size:11px;color:var(--muted);min-width:48px}
+.a-txt{font-size:12px;flex:1}
+.badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.badge-amber{background:var(--amber-s);color:var(--amber)}
+.badge-red{background:var(--red-s);color:var(--red)}
+.badge-green{background:var(--green-s);color:var(--green)}
+.empty{text-align:center;color:var(--muted);padding:32px 0;font-size:13px}
+
+/* ZONE EDITOR */
+.ze-wrap{display:grid;grid-template-columns:1fr 280px;gap:14px}
+.ze-canvas-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.ze-toolbar{display:flex;align-items:center;gap:6px;padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.ze-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;gap:10px}
+.ze-panel h3{font-size:13px;font-weight:600}
+#zone-canvas{display:block;cursor:crosshair;width:100%}
+.zone-list{display:flex;flex-direction:column;gap:5px;max-height:260px;overflow-y:auto}
+.zone-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--radius);border:1px solid var(--border);cursor:pointer}
+.zone-item:hover{background:var(--surface2)}
+.zone-item.sel{border-color:var(--accent);background:#eef2ff}
+.z-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.z-name{font-size:13px;flex:1;font-weight:500}
+.z-cat{font-size:10px;padding:1px 6px;border-radius:20px;background:var(--surface2);color:var(--muted)}
+.z-pts{font-size:10px;color:var(--muted);min-width:28px;text-align:right}
+.icon-btn{width:26px;height:26px;border-radius:var(--radius);border:1px solid var(--border);
+  background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.icon-btn:hover{background:var(--surface2);color:var(--text)}
+.icon-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+.tip-box{background:var(--surface2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.7}
+.ze-btn{width:100%;padding:9px;border-radius:var(--radius);border:1px solid var(--border);
+  background:none;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;transition:all .15s}
+.ze-btn-save{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ze-btn-save:hover{background:var(--accent2)}
+
+/* BEHAVIOR EDITOR */
+.beh-wrap{display:grid;grid-template-columns:1fr 340px;gap:14px}
+.beh-list{display:flex;flex-direction:column;gap:8px}
+.beh-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:12px 16px;display:flex;align-items:center;gap:10px}
+.beh-color{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.beh-info{flex:1}
+.beh-name{font-size:14px;font-weight:500}
+.beh-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.beh-alert-chip{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:var(--red-s);color:var(--red)}
+.beh-form .card-hd{background:var(--surface2)}
+
+/* FIELD */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.field input,.field select,.field textarea{
+  padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);
+  font-size:13px;font-family:inherit;background:var(--surface);color:var(--text)}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent)}
+.fields-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.slider-row{display:flex;align-items:center;gap:8px}
+.slider-row input[type=range]{flex:1;accent-color:var(--accent)}
+.slider-val{font-size:13px;font-weight:600;min-width:50px;text-align:right}
+.color-palette{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.c-swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .1s}
+.c-swatch:hover{transform:scale(1.2)}
+.c-swatch.sel{border-color:#000;transform:scale(1.15)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border)}
+.toggle-row span{font-size:13px;font-weight:500}
+.tog{position:relative;width:40px;height:22px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0}
+.tog-sl{position:absolute;inset:0;background:#ccc;border-radius:22px;cursor:pointer;transition:.2s}
+.tog input:checked+.tog-sl{background:var(--accent)}
+.tog-sl::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.tog input:checked+.tog-sl::before{transform:translateX(18px)}
+.cat-chips{display:flex;gap:5px;flex-wrap:wrap}
+.cat-chip{padding:4px 10px;border-radius:20px;font-size:12px;border:1px solid var(--border);cursor:pointer;background:var(--surface2)}
+.cat-chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* SETTINGS */
+.set-wrap{max-width:640px;margin:0 auto}
+.sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px;margin-top:18px}
+.divider{height:1px;background:var(--border);margin:16px 0}
+
+/* CHART */
+.chart-wrap{position:relative;height:200px}
+
+/* ZONE BARS */
+.zbar-list{display:flex;flex-direction:column;gap:8px}
+.zbar-row{display:flex;flex-direction:column;gap:3px}
+.zbar-meta{display:flex;justify-content:space-between;font-size:12px}
+.zbar-bg{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.zbar-fill{height:100%;border-radius:3px;transition:width .6s}
+
+/* CONFIRM MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:center;justify-content:center}
+.modal{background:var(--surface);border-radius:var(--radius-lg);padding:24px 28px;max-width:360px;width:90%;text-align:center}
+.modal h3{font-size:15px;font-weight:600;margin-bottom:8px}
+.modal p{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
+.modal-btns{display:flex;gap:8px;justify-content:center}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;padding:10px 18px;border-radius:var(--radius);
+  font-size:13px;font-weight:500;z-index:300;opacity:0;transition:all .25s;transform:translateY(8px)}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{background:var(--text);color:var(--surface)}
+.toast.err{background:var(--red);color:#fff}
+
+@media(max-width:900px){
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .g2,.g2b,.g3,.ze-wrap,.beh-wrap,.fields-2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="brand" id="nav-brand">
+    <div class="brand-dot"></div>
+    FlowSight
+  </div>
+  <button class="ntab on" onclick="showPage('live',this)">
+    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    Live
+  </button>
+  <button class="ntab" onclick="showPage('dash',this)">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </button>
+  <button class="ntab" onclick="showPage('zones',this)">
+    <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+    Zones
+  </button>
+  <button class="ntab" onclick="showPage('behaviors',this)">
+    <svg viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+    Behaviors
+  </button>
+  <button class="ntab" onclick="showPage('heatmap',this)">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+    Heat Map
+  </button>
+  <button class="ntab" onclick="showPage('settings',this)">
+    <svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+    Settings
+  </button>
+  <div class="nav-r">
+    <div class="pill"><div class="dot-live" id="dot"></div><span id="status-lbl">Stopped</span></div>
+    <button class="btn btn-primary" id="main-btn" onclick="toggleEngine()">▶ Start</button>
+  </div>
+</nav>
+
+<!-- LIVE -->
+<div class="page on" id="pg-live">
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-val" id="k-cust" style="color:var(--blue)">0</div>
+      <div class="kpi-lbl">In Store</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val" id="k-staff" style="color:var(--accent)">0</div>
+      <div class="kpi-lbl">Staff</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val" id="k-alert" style="color:var(--red)">0</div>
+      <div class="kpi-lbl">Need Help</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val" id="k-today" style="font-size:20px;padding-top:6px">—</div>
+      <div class="kpi-lbl">Today Total</div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-hd"><h3>Live Feed</h3><span id="cam-lbl">Camera 1</span></div>
+      <div class="feed" id="feed-wrap">
+        <div class="feed-off" id="feed-off">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+          <p>Press Start to begin detection</p>
+        </div>
+        <canvas id="live-canvas" style="display:none"></canvas>
+        <div class="live-badge" id="live-badge">● LIVE</div>
+      </div>
+      <div class="hud-bar">
+        <div class="hud-item"><span class="hud-n" id="h-cust">0</span> customers</div>
+        <div class="hud-item"><span class="hud-n" id="h-staff">0</span> staff</div>
+        <div class="hud-item"><span class="hud-n" id="h-alert">0</span> alerts</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><h3>Recent Alerts</h3><p>Staff assistance needed</p></div>
+      <div class="card-bd"><div class="alert-list" id="alert-list"><div class="empty">No alerts yet</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page" id="pg-dash">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <span style="font-size:12px;color:var(--muted)">Date</span>
+    <input type="date" id="rpt-date" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
+    <button class="btn btn-primary" onclick="exportReport('pdf')">Export PDF</button>
+
+    <button class="btn" onclick="loadDash()">Refresh</button>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-val" id="d-total" style="color:var(--blue)">—</div><div class="kpi-lbl">Customers</div></div>
+    <div class="kpi"><div class="kpi-val" id="d-inter" style="color:var(--amber)">—</div><div class="kpi-lbl">Interested</div></div>
+    <div class="kpi"><div class="kpi-val" id="d-purch" style="color:var(--green)">—</div><div class="kpi-lbl">At Counter</div></div>
+    <div class="kpi"><div class="kpi-val" id="d-zone" style="font-size:16px;padding-top:8px">—</div><div class="kpi-lbl">Top Zone</div></div>
+  </div>
+  <div class="g2b">
+    <div class="card">
+      <div class="card-hd"><h3>Hourly Activity</h3></div>
+      <div class="card-bd"><div class="chart-wrap"><canvas id="hourly-chart"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><h3>Zone Activity</h3></div>
+      <div class="card-bd"><div class="zbar-list" id="zone-bars"><div class="empty">No data</div></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hd">
+      <h3>AI Insight</h3>
+      <button class="btn" onclick="loadInsight()">✦ Generate</button>
+    </div>
+    <div class="card-bd">
+      <div id="insight-src" style="font-size:11px;color:var(--muted);margin-bottom:10px">Click Generate to analyze today's data</div>
+      <div id="insight-content" style="font-size:13px;color:var(--muted)">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- ZONES -->
+<div class="page" id="pg-zones">
+  <div class="ze-wrap">
+    <div class="ze-canvas-wrap">
+      <div class="ze-toolbar">
+        <span style="font-size:13px;font-weight:600">Zone Editor</span>
+        <button class="btn" onclick="undoPt()">↩ Undo</button>
+        <button class="btn btn-danger" onclick="clearCur()">Clear</button>
+        <button class="btn btn-primary" onclick="saveCur()">✓ Save Zone</button>
+        <button class="btn" onclick="loadFrame()">📷 Load Frame</button>
+        <button class="btn btn-danger" onclick="confirmClearAll()" style="margin-left:auto">Clear All</button>
+      </div>
+      <canvas id="zone-canvas" width="960" height="540"></canvas>
+    </div>
+    <div class="ze-panel">
+      <h3>Add / Edit Zone</h3>
+      <div class="field"><label>Zone name</label>
+        <input id="zn-name" placeholder="e.g. Front shelf, Checkout"></div>
+      <div class="field"><label>Category</label>
+        <div class="cat-chips" id="zn-cats">
+          <span class="cat-chip on" data-cat="product" onclick="selCat(this)">Product</span>
+          <span class="cat-chip" data-cat="checkout" onclick="selCat(this)">Checkout</span>
+          <span class="cat-chip" data-cat="seating" onclick="selCat(this)">Seating</span>
+          <span class="cat-chip" data-cat="staff" onclick="selCat(this)">Staff</span>
+          <span class="cat-chip" data-cat="entrance" onclick="selCat(this)">Entrance</span>
+          <span class="cat-chip" data-cat="custom" onclick="selCat(this)">Custom</span>
+        </div>
+      </div>
+      <div class="field"><label>Color</label>
+        <div class="color-palette" id="zn-colors"></div>
+      </div>
+      <div class="zone-list" id="zone-list"><div class="empty">No zones yet</div></div>
+      <div class="tip-box">Click canvas to add points<br>Need ≥ 3 points to save<br>↩ Undo removes last point</div>
+      <button class="ze-btn ze-btn-save" onclick="saveAllZones()">💾 Save All Zones</button>
+    </div>
+  </div>
+</div>
+
+<!-- BEHAVIORS -->
+<div class="page" id="pg-behaviors">
+  <div class="beh-wrap">
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h2 style="font-size:15px;font-weight:600">Behavior Rules</h2>
+        <div style="display:flex;gap:6px">
+          <button class="btn" onclick="resetBehaviors()">Reset to defaults</button>
+        </div>
+      </div>
+      <div class="beh-list" id="beh-list"><div class="empty">Loading...</div></div>
+    </div>
+    <div class="card beh-form">
+      <div class="card-hd"><h3 id="beh-form-title">Add Behavior</h3></div>
+      <div class="card-bd">
+        <input type="hidden" id="beh-edit-id">
+        <div class="field"><label>Name</label>
+          <input id="beh-name" placeholder="e.g. Interested, Waiting, Loitering"></div>
+        <div class="fields-2">
+          <div class="field"><label>Trigger Zone</label>
+            <select id="beh-zone">
+              <option value="any">Any zone</option>
+              <option value="product">Product area</option>
+              <option value="checkout">Checkout</option>
+              <option value="seating">Seating</option>
+              <option value="staff">Staff area</option>
+              <option value="entrance">Entrance</option>
+              <option value="floor">Floor (no zone)</option>
+            </select>
+          </div>
+          <div class="field"><label>Action</label>
+            <select id="beh-action">
+              <option value="dwell">Dwell (stay)</option>
+              <option value="still">Still standing</option>
+              <option value="moving">Moving</option>
+              <option value="presence">Presence</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" id="thresh-field">
+          <label>Duration — <span id="beh-dur-val">20</span> sec</label>
+          <div class="slider-row">
+            <span style="font-size:11px;color:var(--muted)">0s</span>
+            <input type="range" id="beh-threshold" min="0" max="600" value="20"
+              oninput="document.getElementById('beh-dur-val').textContent=this.value">
+            <span style="font-size:11px;color:var(--muted)">10m</span>
+          </div>
+        </div>
+        <div class="field"><label>Color</label>
+          <div class="color-palette" id="beh-colors"></div>
+        </div>
+        <div class="toggle-row">
+          <span>Send staff alert</span>
+          <label class="tog"><input type="checkbox" id="beh-alert" checked><span class="tog-sl"></span></label>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-primary" style="flex:1" onclick="saveBehavior()">Save</button>
+          <button class="btn" onclick="clearBehForm()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HEATMAP -->
+<div class="page" id="pg-heatmap">
+  <div class="g2b" style="margin-bottom:14px">
+    <div class="card">
+      <div class="card-hd">
+        <h3>🔥 Customer Heat Map</h3>
+        <div style="display:flex;gap:6px">
+          <button class="btn" onclick="resetHeatmap()">Reset</button>
+          <label style="font-size:12px;color:var(--muted);align-self:center">Intensity</label>
+          <input type="range" id="hm-alpha" min="20" max="80" value="50"
+            style="width:80px;accent-color:var(--accent)" oninput="refreshHeatmap()">
+        </div>
+      </div>
+      <div style="background:#111;min-height:300px;display:flex;align-items:center;justify-content:center">
+        <img id="heatmap-img" style="width:100%;display:block" alt="Heat Map">
+      </div>
+      <div style="padding:10px 16px;background:var(--surface2);font-size:12px;color:var(--muted)">
+        Brighter = more customer activity. Updates every 5 seconds while detection is running.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><h3>📍 Top Activity Zones</h3></div>
+      <div class="card-bd">
+        <div id="hm-zones"><div class="empty">Start detection to see zone activity</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="pg-settings">
+  <div class="set-wrap">
+    <div class="card">
+      <div class="card-hd"><h3>Settings</h3></div>
+      <div class="card-bd">
+        <div class="sec-title">Branding</div>
+        <div class="fields-2">
+          <div class="field"><label>App name</label><input id="s-brand" placeholder="FlowSight"></div>
+          <div class="field"><label>Tagline</label><input id="s-tagline" placeholder="Retail Intelligence"></div>
+        </div>
+        <div class="divider"></div>
+        <div class="sec-title">Camera</div>
+        <div class="field"><label>RTSP URL</label><input id="s-rtsp" placeholder="rtsp://user:pass@192.168.x.x/stream2"></div>
+        <div class="divider"></div>
+        <div class="sec-title">Detection</div>
+        <div class="fields-2">
+          <div class="field"><label>Confidence (0.1–0.9)</label><input id="s-conf" type="number" step="0.05" min="0.1" max="0.9"></div>
+        </div>
+        <div class="divider"></div>
+        <div class="sec-title">AI Insight (Optional)</div>
+        <div style="background:var(--surface2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">
+          <b style="color:var(--text)">Gemini API</b> — Free, 1500 req/day — get key at <b>aistudio.google.com</b><br>
+          <b style="color:var(--text)">Claude API</b> — Paid ~$0.001/call — get key at <b>console.anthropic.com</b>
+        </div>
+        <div class="fields-2">
+          <div class="field"><label>Gemini API Key (Free)</label><input id="s-gemini" type="password" placeholder="AIza..."></div>
+          <div class="field"><label>Claude API Key</label><input id="s-claude" type="password" placeholder="sk-ant-..."></div>
+        </div>
+        <div class="divider"></div>
+        <div class="divider"></div>
+        <div class="sec-title">Privacy</div>
+        <div class="toggle-row" style="border-top:none">
+          <div><span style="font-size:14px;font-weight:500">Face Anonymization</span>
+            <div style="font-size:12px;color:var(--muted)">Blur faces for privacy compliance</div></div>
+          <label class="tog"><input type="checkbox" id="s-anon"><span class="tog-sl"></span></label>
+        </div>
+        <div style="margin-top:16px">
+          <button class="btn btn-primary" style="width:100%;padding:10px" onclick="saveSettings()">Save Settings</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Constants ──────────────────────────────────────────────────────────────────
+const COLORS = ["#6366f1","#f59e0b","#22c55e","#ef4444","#a855f7","#14b8a6","#f97316","#3b82f6","#ec4899","#6b7280"];
+const CAT_COLORS = {product:"#3b82f6",checkout:"#22c55e",seating:"#f59e0b",staff:"#a855f7",entrance:"#14b8a6",custom:"#6b7280"};
+const BEH_BADGE = {interested:"badge-amber",loitering:"badge-red",checkout_ready:"badge-green",waiting:"badge-red"};
+let hourlyChart = null;
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+function toast(msg, type="ok"){
+  const t=$("toast"); t.textContent=msg; t.className=`toast show ${type}`;
+  setTimeout(()=>t.className="toast",2600);
+}
+function showPage(id, btn){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("on"));
+  document.querySelectorAll(".ntab").forEach(t=>t.classList.remove("on"));
+  $("pg-"+id).classList.add("on"); btn.classList.add("on");
+  if(id==="dash")     loadDash();
+  if(id==="zones")    initZoneEditor();
+  if(id==="behaviors")loadBehaviors();
+  if(id==="heatmap")  startHeatmapPoll();
+  else                stopHeatmapPoll();
+}
+function buildColorPalette(containerId, selectedColor, onSelect){
+  const el=$(containerId); el.innerHTML="";
+  COLORS.forEach(c=>{
+    const d=document.createElement("div");
+    d.className="c-swatch"+(c===selectedColor?" sel":"");
+    d.style.background=c; d.title=c;
+    d.onclick=()=>{ el.querySelectorAll(".c-swatch").forEach(x=>x.classList.remove("sel")); d.classList.add("sel"); if(onSelect)onSelect(c); };
+    el.appendChild(d);
+  });
+}
+function getSelectedColor(containerId){
+  const sel=$(containerId).querySelector(".c-swatch.sel");
+  return sel ? sel.style.background : COLORS[0];
+}
+function confirm_(title,msg,onYes){
+  const bg=document.createElement("div"); bg.className="modal-bg";
+  bg.innerHTML=`<div class="modal"><h3>${title}</h3><p>${msg}</p><div class="modal-btns"><button class="btn" id="cn">Cancel</button><button class="btn btn-danger" id="cy">Delete</button></div></div>`;
+  document.body.appendChild(bg);
+  bg.querySelector("#cy").onclick=()=>{document.body.removeChild(bg);onYes();};
+  bg.querySelector("#cn").onclick=()=>document.body.removeChild(bg);
+}
+
+// ── Engine ─────────────────────────────────────────────────────────────────────
+let running=false, soundOn=true;
+async function toggleEngine(){
+  const btn=$("main-btn"); btn.disabled=true;
+  try{
+    if(!running){
+      const r=await fetch("/api/start",{method:"POST"}).then(r=>r.json()).catch(()=>({ok:false,msg:"Server not responding"}));
+      if(r.ok){
+        running=true; updateNav(); startStream();
+        toast("Detection started ✓");
+      } else {
+        toast(r.msg||"Failed to start — check RTSP URL in Settings","err");
+      }
+    } else {
+      btn.textContent="⏳ Stopping...";
+      await fetch("/api/stop",{method:"POST"}).catch(()=>{});
+      // Wait a moment for engine to fully stop
+      await new Promise(r=>setTimeout(r,1500));
+      running=false; updateNav(); stopStream();
+      toast("Stopped");
+    }
+  } finally { btn.disabled=false; }
+}
+function updateNav(){
+  const dot=$("dot"),lbl=$("status-lbl"),btn=$("main-btn"),badge=$("live-badge");
+  dot.className="dot-live"+(running?" on":"");
+  lbl.textContent=running?"Running":"Stopped";
+  btn.className="btn "+(running?"btn-danger":"btn-primary");
+  btn.textContent=running?"⏹ Stop":"▶ Start";
+  if(badge) badge.style.display=running?"block":"none";
+}
+
+// ── Stream ─────────────────────────────────────────────────────────────────────
+let streamTimer=null, sCvs=null, sCtx=null;
+function startStream(){
+  $("feed-off").style.display="none"; $("live-canvas").style.display="block";
+  sCvs=$("live-canvas"); sCtx=sCvs.getContext("2d"); if(streamTimer)return; pollFrame();
+}
+function pollFrame(){
+  const img=new Image();
+  img.onload=()=>{ if(sCvs.width!==img.naturalWidth)sCvs.width=img.naturalWidth;
+    if(sCvs.height!==img.naturalHeight)sCvs.height=img.naturalHeight;
+    sCtx.drawImage(img,0,0); URL.revokeObjectURL(img.src);
+    if(streamTimer!==false) streamTimer=setTimeout(pollFrame,80); };
+  img.onerror=()=>{ if(streamTimer!==false) streamTimer=setTimeout(pollFrame,500); };
+  fetch("/api/jpeg",{cache:"no-store"}).then(r=>r.blob()).then(b=>img.src=URL.createObjectURL(b))
+    .catch(()=>{ if(streamTimer!==false) streamTimer=setTimeout(pollFrame,500); });
+}
+function stopStream(){
+  streamTimer=false; clearTimeout(streamTimer); streamTimer=null;
+  $("feed-off").style.display="flex"; $("live-canvas").style.display="none";
+}
+
+// ── Polling ─────────────────────────────────────────────────────────────────────
+let prevAlertCnt=0;
+function pollHud(){
+  fetch("/api/hud").then(r=>r.json()).then(d=>{
+    if(d.running!==running){running=d.running;updateNav();if(running)startStream();else stopStream();}
+    ["cust","seller","alert"].forEach(k=>{
+      $("k-"+k).textContent=d[k]??0;
+      if($("h-"+k)) $("h-"+k).textContent=d[k]??0;
+    });
+    if($("h-staff")) $("h-staff").textContent=d.seller??0;
+    $("k-staff").textContent=d.seller??0;
+  }).catch(()=>{});
+}
+function pollAlerts(){
+  fetch("/api/alerts").then(r=>r.json()).then(data=>{
+    if(data.length>prevAlertCnt) playAlert();
+    prevAlertCnt=data.length; renderAlerts(data,"alert-list");
+  }).catch(()=>{});
+}
+function pollStats(){
+  fetch("/api/stats").then(r=>r.json()).then(d=>{$("k-today").textContent=d.total??0;}).catch(()=>{});
+}
+function playAlert(){
+  if(!soundOn)return;
+  try{const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [880,660].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);o.frequency.value=f;
+      g.gain.setValueAtTime(.2,ctx.currentTime+i*.15);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.15+.3);
+      o.start(ctx.currentTime+i*.15);o.stop(ctx.currentTime+i*.15+.3);});
+  }catch(e){}
+}
+function renderAlerts(data,id){
+  const el=$(id);
+  if(!data||!data.length){el.innerHTML='<div class="empty">No alerts</div>';return;}
+  el.innerHTML=[...data].reverse().slice(0,30).map(a=>`
+    <div class="a-item ${a.behavior_id==='loitering'||a.behavior_id==='waiting'?'urgent':''}">
+      <span class="a-time">${a.time}</span>
+      <span class="a-txt">#${a.person} · ${a.zone}</span>
+      <span class="badge ${BEH_BADGE[a.behavior_id]||'badge-amber'}">${a.behavior}</span>
+    </div>`).join("");
+}
+
+// ── Dashboard ──────────────────────────────────────────────────────────────────
+async function loadDash(){
+  const date=$("rpt-date").value||new Date().toISOString().slice(0,10);
+  fetch("/api/stats").then(r=>r.json()).then(d=>{
+    $("d-total").textContent=d.total??0; $("d-inter").textContent=d.interested??0;
+    $("d-purch").textContent=d.purchasing??0; $("d-zone").textContent=d.top_zone||"—";
+  }).catch(()=>{});
+  fetch("/api/hourly").then(r=>r.json()).then(d=>{
+    const ctx=$("hourly-chart");
+    if(hourlyChart)hourlyChart.destroy();
+    Chart.defaults.color="#888";
+    hourlyChart=new Chart(ctx,{type:"bar",data:{labels:d.labels,datasets:d.datasets},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"top",labels:{usePointStyle:true,boxWidth:8,font:{size:11}}}},
+        scales:{x:{stacked:true,grid:{display:false},ticks:{maxTicksLimit:8}},y:{stacked:true,grid:{color:"#f0f0f4"}}}}});
+  }).catch(()=>{});
+  fetch("/api/zones_activity").then(r=>r.json()).then(data=>{
+    const el=$("zone-bars");
+    if(!data.length){el.innerHTML='<div class="empty">No data</div>';return;}
+    const max=data[0].count;
+    el.innerHTML=data.map(z=>`<div class="zbar-row">
+      <div class="zbar-meta"><span>${z.zone}</span><span style="color:var(--muted)">${z.count}</span></div>
+      <div class="zbar-bg"><div class="zbar-fill" style="width:${Math.round(z.count/max*100)}%;background:var(--accent)"></div></div>
+    </div>`).join("");
+  }).catch(()=>{});
+}
+function exportReport(fmt){
+  const date=$("rpt-date").value||new Date().toISOString().slice(0,10);
+  // PDF only
+  window.open(`/api/report/pdf?date=${date}`,"_blank");
+}
+async function loadInsight(){
+  const date=$("rpt-date").value||new Date().toISOString().slice(0,10);
+  $("insight-src").textContent="Analyzing...";
+  $("insight-content").textContent="⏳ Generating...";
+  const d=await fetch(`/api/insight?date=${date}`).then(r=>r.json()).catch(()=>({ok:false}));
+  $("insight-src").textContent=d.source||"Analysis";
+  $("insight-content").innerHTML=d.html||"<span style='color:var(--muted)'>No data</span>";
+}
+
+// ── Zone Editor ───────────────────────────────────────────────────────────────
+let zCvs,zCtx,zones={},curPts=[],curColor=COLORS[0],curCat="product",zEditId=null;
+function initZoneEditor(){
+  zCvs=$("zone-canvas"); zCtx=zCvs.getContext("2d");
+  zCvs.onclick=onZoneClick;
+  buildColorPalette("zn-colors",curColor,c=>curColor=c);
+  if(!Object.keys(zones).length) loadZones();
+}
+async function loadFrame(){
+  toast("Loading frame...");
+  const r=await fetch("/api/frame").then(r=>r.json()).catch(()=>({ok:false}));
+  if(!r.ok){toast("No frame — start detection first","err");return;}
+  const img=new Image();
+  img.onload=()=>{zCvs.width=r.width;zCvs.height=r.height;zCtx._bg=img;redrawZones();toast("Frame loaded ✓");};
+  img.src="data:image/jpeg;base64,"+r.image;
+}
+async function loadZones(){
+  const r=await fetch("/api/zones/load").then(r=>r.json()).catch(()=>({}));
+  const cam=r.cam_0||{};
+  zones={};
+  for(const[id,data] of Object.entries(cam)){
+    if(Array.isArray(data)) zones[id]={name:id,category:"product",color:COLORS[0],points:data};
+    else zones[id]=data;
+  }
+  curPts=[]; renderZoneList(); redrawZones();
+}
+function redrawZones(){
+  const w=zCvs.width,h=zCvs.height;
+  zCtx.clearRect(0,0,w,h);
+  if(zCtx._bg)zCtx.drawImage(zCtx._bg,0,0,w,h);
+  else{zCtx.fillStyle="#1a1a1a";zCtx.fillRect(0,0,w,h);}
+  for(const[id,z] of Object.entries(zones)){
+    const pts=z.points;
+    if(!pts||pts.length<3)continue;
+    const col=z.color||COLORS[0];
+    zCtx.beginPath();zCtx.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++)zCtx.lineTo(pts[i][0],pts[i][1]);
+    zCtx.closePath();
+    zCtx.fillStyle=col+"33";zCtx.fill();
+    zCtx.strokeStyle=col;zCtx.lineWidth=2;zCtx.stroke();
+    const cx=pts.reduce((s,p)=>s+p[0],0)/pts.length;
+    const cy=pts.reduce((s,p)=>s+p[1],0)/pts.length;
+    zCtx.fillStyle="#fff";zCtx.font="bold 12px system-ui";
+    zCtx.fillText(z.name||id,cx-40,cy);
+  }
+  if(curPts.length){
+    const col=curColor;
+    zCtx.strokeStyle=col;zCtx.lineWidth=2;zCtx.setLineDash([5,3]);
+    zCtx.beginPath();zCtx.moveTo(curPts[0][0],curPts[0][1]);
+    for(let i=1;i<curPts.length;i++)zCtx.lineTo(curPts[i][0],curPts[i][1]);
+    if(curPts.length>2)zCtx.lineTo(curPts[0][0],curPts[0][1]);
+    zCtx.stroke();zCtx.setLineDash([]);
+    curPts.forEach(p=>{zCtx.beginPath();zCtx.arc(p[0],p[1],5,0,Math.PI*2);zCtx.fillStyle=col;zCtx.fill();});
+    zCtx.fillStyle="rgba(0,0,0,.65)";zCtx.fillRect(6,6,240,26);
+    zCtx.fillStyle="#fff";zCtx.font="13px system-ui";
+    zCtx.fillText(`Drawing: ${$("zn-name").value||"zone"} (${curPts.length} pts)`,10,24);
+  }
+}
+function onZoneClick(e){
+  const rect=zCvs.getBoundingClientRect();
+  const sx=zCvs.width/rect.width,sy=zCvs.height/rect.height;
+  curPts.push([Math.round((e.clientX-rect.left)*sx),Math.round((e.clientY-rect.top)*sy)]);
+  redrawZones();
+}
+function undoPt(){if(curPts.length){curPts.pop();redrawZones();}}
+function clearCur(){curPts=[];redrawZones();}
+function saveCur(){
+  const name=$("zn-name").value.trim();
+  if(!name){toast("Enter a zone name","err");return;}
+  if(curPts.length<3){toast("Need at least 3 points","err");return;}
+  const id=zEditId||("z_"+Date.now());
+  zones[id]={name,category:curCat,color:curColor,points:[...curPts]};
+  curPts=[];zEditId=null;renderZoneList();redrawZones();toast(`Zone "${name}" saved`);
+}
+async function saveAllZones(){
+  const payload={cam_0:{}};
+  for(const[id,z] of Object.entries(zones)) payload.cam_0[id]=z;
+  const r=await fetch("/api/zones/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}).then(r=>r.json()).catch(()=>({ok:false}));
+  r.ok?toast("Zones saved to file ✓"):toast("Save failed","err");
+}
+function confirmClearAll(){confirm_("Clear all zones?","This will delete every zone and cannot be undone.",async()=>{
+  zones={};curPts=[];renderZoneList();redrawZones();
+  await fetch("/api/zones/clear",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({cam:"cam_0"})});
+  toast("All zones cleared");});}
+function deleteZone(id){confirm_(`Delete "${zones[id]?.name||id}"?`,"Remove this zone from canvas and file.",async()=>{
+  delete zones[id];renderZoneList();redrawZones();
+  await fetch("/api/zones/delete",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({zone_id:id})});
+  toast("Zone deleted");});}
+function editZone(id){
+  const z=zones[id]; if(!z)return;
+  $("zn-name").value=z.name||id; curColor=z.color||COLORS[0]; curCat=z.category||"product";
+  buildColorPalette("zn-colors",curColor,c=>curColor=c);
+  document.querySelectorAll(".cat-chip").forEach(c=>c.classList.toggle("on",c.dataset.cat===curCat));
+  curPts=[...(z.points||[])]; zEditId=id; redrawZones();
+}
+function renderZoneList(){
+  const el=$("zone-list");
+  const entries=Object.entries(zones);
+  if(!entries.length){el.innerHTML='<div class="empty">No zones yet</div>';return;}
+  el.innerHTML=entries.map(([id,z])=>`
+    <div class="zone-item" onclick="editZone('${id}')">
+      <div class="z-dot" style="background:${z.color||'#888'}"></div>
+      <span class="z-name">${z.name||id}</span>
+      <span class="z-cat">${z.category||""}</span>
+      <span class="z-pts">${(z.points||[]).length}pt</span>
+      <button class="icon-btn" onclick="event.stopPropagation();deleteZone('${id}')" title="Delete">
+        <svg viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+      </button>
+    </div>`).join("");
+}
+function selCat(chip){
+  document.querySelectorAll(".cat-chip").forEach(c=>c.classList.remove("on")); chip.classList.add("on");
+  curCat=chip.dataset.cat;
+  const col=CAT_COLORS[curCat]||COLORS[0]; curColor=col;
+  buildColorPalette("zn-colors",col,c=>curColor=c);
+}
+
+// ── Behaviors ──────────────────────────────────────────────────────────────────
+let behaviors=[], behEditIdx=-1;
+async function loadBehaviors(){
+  behaviors=await fetch("/api/behaviors").then(r=>r.json()).catch(()=>[]);
+  buildColorPalette("beh-colors",COLORS[0]);
+  renderBehList();
+}
+function renderBehList(){
+  const el=$("beh-list");
+  if(!behaviors.length){el.innerHTML='<div class="empty">No behaviors</div>';return;}
+  el.innerHTML=behaviors.map((b,i)=>`
+    <div class="beh-item">
+      <div class="beh-color" style="background:${b.color||'#888'}"></div>
+      <div class="beh-info">
+        <div class="beh-name">${b.name}</div>
+        <div class="beh-meta">${b.zone} · ${b.action}${b.threshold>0?' · '+b.threshold+'s':''}</div>
+      </div>
+      ${b.alert?'<span class="badge badge-red">Alert</span>':''}
+      <button class="icon-btn" onclick="editBeh(${i})" title="Edit">
+        <svg viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+      </button>
+      <button class="icon-btn" onclick="deleteBeh(${i})" title="Delete">
+        <svg viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+      </button>
+    </div>`).join("");
+  el.innerHTML += `<button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="clearBehForm()">+ Add Behavior</button>`;
+}
+function editBeh(i){
+  const b=behaviors[i]; behEditIdx=i;
+  $("beh-form-title").textContent="Edit Behavior";
+  $("beh-edit-id").value=b.id||"";
+  $("beh-name").value=b.name||"";
+  $("beh-zone").value=b.zone||"any";
+  $("beh-action").value=b.action||"dwell";
+  $("beh-threshold").value=b.threshold||0;
+  $("beh-dur-val").textContent=b.threshold||0;
+  $("beh-alert").checked=!!b.alert;
+  buildColorPalette("beh-colors",b.color||COLORS[0]);
+}
+function clearBehForm(){
+  behEditIdx=-1; $("beh-form-title").textContent="Add Behavior";
+  $("beh-name").value=""; $("beh-zone").value="any";
+  $("beh-action").value="dwell"; $("beh-threshold").value=20;
+  $("beh-dur-val").textContent=20; $("beh-alert").checked=true;
+  buildColorPalette("beh-colors",COLORS[0]);
+}
+async function saveBehavior(){
+  const name=$("beh-name").value.trim();
+  if(!name){toast("Enter a behavior name","err");return;}
+  const beh={
+    id: $("beh-edit-id").value||("b_"+Date.now()),
+    name, zone:$("beh-zone").value,
+    action:$("beh-action").value,
+    threshold:+$("beh-threshold").value,
+    alert:$("beh-alert").checked,
+    color:getSelectedColor("beh-colors"),
+  };
+  if(behEditIdx>=0) behaviors[behEditIdx]=beh;
+  else behaviors.push(beh);
+  await fetch("/api/behaviors/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(behaviors)});
+  toast("Behavior saved ✓"); clearBehForm(); renderBehList();
+}
+async function deleteBeh(i){
+  confirm_(`Delete "${behaviors[i].name}"?`,"Remove this behavior rule.",async()=>{
+    behaviors.splice(i,1);
+    await fetch("/api/behaviors/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(behaviors)});
+    toast("Deleted"); renderBehList();});
+}
+async function resetBehaviors(){
+  confirm_("Reset behaviors?","Restore all default behavior rules.",async()=>{
+    await fetch("/api/behaviors/reset",{method:"POST"});
+    await loadBehaviors(); toast("Reset to defaults");});
+}
+
+// ── Settings ───────────────────────────────────────────────────────────────────
+async function loadSettings(){
+  const[s,b]=await Promise.all([
+    fetch("/api/settings").then(r=>r.json()).catch(()=>({})),
+    fetch("/api/brand").then(r=>r.json()).catch(()=>({})),
+  ]);
+  if(s.rtsp_url) $("s-rtsp").value=s.rtsp_url;
+  if(s.conf!=null) $("s-conf").value=s.conf;
+  if(s.gemini_api_key) $("s-gemini").value=s.gemini_api_key;
+  if(s.claude_api_key) $("s-claude").value=s.claude_api_key;
+  $("s-anon").checked=!!s.anonymize;
+  if(b.name) $("s-brand").value=b.name;
+  if(b.tagline) $("s-tagline").value=b.tagline;
+}
+async function saveSettings(){
+  const settings={
+    rtsp_url:$("s-rtsp").value, conf:+$("s-conf").value,
+    anonymize:$("s-anon").checked,
+    gemini_api_key:$("s-gemini").value, claude_api_key:$("s-claude").value,
+  };
+  const brand={name:$("s-brand").value||"FlowSight",tagline:$("s-tagline").value||""};
+  await Promise.all([
+    fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(settings)}),
+    fetch("/api/brand/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(brand)}),
+  ]);
+  $("nav-brand").innerHTML=`<div class="brand-dot"></div>${brand.name}`;
+  document.title=brand.name;
+  toast("Settings saved ✓");
+}
+
+// ── Heat Map ──────────────────────────────────────────────────────────────────
+let hmTimer = null;
+
+function startHeatmapPoll(){
+  if(hmTimer) return;
+  hmTimer = setInterval(refreshHeatmap, 5000);
+  refreshHeatmap();
+}
+function stopHeatmapPoll(){ clearInterval(hmTimer); hmTimer=null; }
+
+function refreshHeatmap(){
+  const alpha = Math.round(($("hm-alpha")?.value||50)/100*100);
+  const img = $("heatmap-img");
+  if(img) img.src = `/api/heatmap/jpeg?alpha=${alpha/100}&t=${Date.now()}`;
+  fetch("/api/heatmap/zones").then(r=>r.json()).then(zones=>{
+    const el=$("hm-zones");
+    if(!el) return;
+    if(!zones.length){el.innerHTML='<div class="empty">No zone data yet</div>';return;}
+    const max=zones[0].score||1;
+    el.innerHTML=zones.map((z,i)=>`
+      <div class="zbar-row">
+        <div class="zbar-meta">
+          <span>${i===0?"🔥":"📍"} ${z.name}</span>
+          <span style="color:var(--muted)">#${i+1}</span>
+        </div>
+        <div class="zbar-bg">
+          <div class="zbar-fill" style="width:${Math.round(z.score/max*100)}%;background:var(--accent)"></div>
+        </div>
+      </div>`).join("");
+  }).catch(()=>{});
+}
+
+function resetHeatmap(){
+  fetch("/api/heatmap/reset",{method:"POST"}).then(()=>{ refreshHeatmap(); toast("Heat map reset"); });
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+$("rpt-date").value=new Date().toISOString().slice(0,10);
+loadSettings();
+fetch("/api/brand").then(r=>r.json()).then(b=>{
+  if(b.name){$("nav-brand").innerHTML=`<div class="brand-dot"></div>${b.name}`;document.title=b.name;}
+});
+pollHud(); pollAlerts(); pollStats();
+setInterval(pollHud,1500); setInterval(pollAlerts,3000); setInterval(pollStats,15000);
+</script>
+</body>
+</html>
