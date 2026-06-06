@@ -3,15 +3,21 @@ import cv2, numpy as np
 from zones import get_zone_color
 
 def draw_overlay(frame, persons, states, zones_poly, zones_meta,
-                 anonymize=False) -> np.ndarray:
+                 anonymize=False, author_w=960, author_h=540) -> np.ndarray:
+    fh, fw = frame.shape[:2]
+    sx = fw / author_w   # scale factors from authoring → native frame resolution
+    sy = fh / author_h
+
     overlay = frame.copy()
     for zid, poly in zones_poly.items():
-        meta = zones_meta.get(zid, {})
-        col  = get_zone_color(meta)
-        cv2.fillPoly(overlay, [poly], col)
-        cv2.polylines(overlay, [poly], True, col, 2)
-        cx = int(poly.mean(0)[0])
-        cy = int(poly.mean(0)[1])
+        meta  = zones_meta.get(zid, {})
+        col   = get_zone_color(meta)
+        # Scale polygon from authoring space to native frame space
+        scaled = (poly.astype(float) * [sx, sy]).astype('int32')
+        cv2.fillPoly(overlay, [scaled], col)
+        cv2.polylines(overlay, [scaled], True, col, 2)
+        cx = int(scaled.mean(0)[0])
+        cy = int(scaled.mean(0)[1])
         cv2.putText(overlay, meta.get("name", zid),
                     (cx-40, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.4, col, 1)
     cv2.addWeighted(overlay, 0.18, frame, 0.82, 0, frame)

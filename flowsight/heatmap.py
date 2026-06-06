@@ -25,22 +25,24 @@ class HeatMapEngine:
         if self._frame_count % 30 == 0:
             self._heat *= self.decay
 
+        r = max(self.w, self.h) // 20
+        # Pre-build distance grid for the blob (vectorized, reused each call)
+        _ys, _xs = np.ogrid[-r:r+1, -r:r+1]
+        _blob_base = np.clip(1.0 - np.hypot(_xs, _ys) / r, 0, None).astype(np.float32)
+
         for p in persons:
             cx, cy = p.get("center", (0, 0))
             cx = max(0, min(self.w-1, int(cx)))
             cy = max(0, min(self.h-1, int(cy)))
-            # Add gaussian blob around person center
-            r = max(self.w, self.h) // 20
-            x1 = max(0, cx-r); x2 = min(self.w, cx+r)
-            y1 = max(0, cy-r); y2 = min(self.h, cy+r)
-            if x2 > x1 and y2 > y1:
-                blob = np.zeros((y2-y1, x2-x1), dtype=np.float32)
-                bcx, bcy = cx-x1, cy-y1
-                for bx in range(blob.shape[1]):
-                    for by in range(blob.shape[0]):
-                        d = ((bx-bcx)**2 + (by-bcy)**2) ** 0.5
-                        blob[by, bx] = max(0, 1.0 - d/r)
-                self._heat[y1:y2, x1:x2] += blob
+            # Crop blob to image boundary
+            bx1, bx2 = cx - r, cx + r + 1
+            by1, by2 = cy - r, cy + r + 1
+            sx1 = max(0, -bx1); sx2 = _blob_base.shape[1] - max(0, bx2 - self.w)
+            sy1 = max(0, -by1); sy2 = _blob_base.shape[0] - max(0, by2 - self.h)
+            fx1, fx2 = max(0, bx1), min(self.w, bx2)
+            fy1, fy2 = max(0, by1), min(self.h, by2)
+            if fx2 > fx1 and fy2 > fy1:
+                self._heat[fy1:fy2, fx1:fx2] += _blob_base[sy1:sy2, sx1:sx2]
 
     def get_overlay(self, frame: np.ndarray, alpha: float = 0.45) -> np.ndarray:
         """Return frame with heat map overlay"""

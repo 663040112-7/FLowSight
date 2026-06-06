@@ -4,12 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FlowSight</title>
+<link rel="icon" type="image/x-icon" href="/assets/icon.ico">
+<link rel="icon" type="image/png" sizes="256x256" href="/assets/icon.png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<script>
+/* i18n bootstrap — defines window.isTH() immediately so it's
+   available to ALL JS code even before the translation block loads */
+window.isTH = window.isTH || function(){
+  return (localStorage.getItem("fs_lang")||"en") === "th";
+};
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#f8f8fa;--surface:#fff;--surface2:#f3f3f7;--border:#e5e5ea;
-  --text:#111;--muted:#888;--accent:#6366f1;--accent2:#818cf8;
-  --green:#16a34a;--amber:#d97706;--red:#dc2626;--blue:#2563eb;
+  --bg:#c8c8be;--surface:#d8d8ce;--surface2:#c0c0b6;--border:#b0b0a6;
+  --text:#2a2a28;--muted:#6a6a62;--accent:#d4a800;--accent2:#e8bc00;
+  --green:#16a34a;--amber:#c47a00;--red:#c0392b;--blue:#1a6fa8;
   --green-s:#dcfce7;--amber-s:#fef3c7;--red-s:#fee2e2;--blue-s:#dbeafe;
   --radius:10px;--radius-lg:14px;
 }
@@ -18,26 +28,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
 
 /* NAV */
-.nav{height:52px;background:var(--surface);border-bottom:1px solid var(--border);
+.nav{height:52px;background:#3a3a36;border-bottom:1px solid #2a2a26;
   display:flex;align-items:center;padding:0 20px;gap:4px;position:sticky;top:0;z-index:100}
-.brand{font-weight:600;font-size:15px;color:var(--accent);margin-right:18px;display:flex;align-items:center;gap:7px}
-.brand-dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.brand{font-weight:700;font-size:15px;color:#f5c200;margin-right:18px;display:flex;align-items:center;gap:7px;letter-spacing:.3px}
+.brand-icon{width:28px;height:28px;flex-shrink:0}
 .ntab{padding:6px 12px;border-radius:var(--radius);border:none;background:none;
-  font-size:13px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit}
-.ntab:hover{background:var(--surface2);color:var(--text)}
-.ntab.on{background:var(--surface2);color:var(--accent);font-weight:500}
-.ntab svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  font-size:13px;color:#b0a888;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit}
+.ntab:hover{background:rgba(255,255,255,.1);color:#e8dfc0}
+.ntab.on{background:rgba(245,194,0,.15);color:#f5c200;font-weight:600}
+  .ntab svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .nav-r{margin-left:auto;display:flex;align-items:center;gap:8px}
 .pill{display:flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;
-  border-radius:20px;border:1px solid var(--border);color:var(--muted)}
+  border-radius:20px;border:1px solid rgba(255,255,255,.2);color:#b0a888}
 .dot-live{width:6px;height:6px;border-radius:50%;background:#aaa}
 .dot-live.on{background:var(--green);box-shadow:0 0 5px var(--green)}
 .btn{padding:7px 16px;border-radius:var(--radius);border:1px solid var(--border);
   background:var(--surface);font-size:13px;font-weight:500;cursor:pointer;
   font-family:inherit;color:var(--text);transition:all .15s}
 .btn:hover{background:var(--surface2)}
-.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-.btn-primary:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn-primary{background:#f5c200;color:#2a2a28;border-color:#f5c200;font-weight:600}
+.btn-primary:hover{background:#e8b400;border-color:#e8b400}
 .btn-danger{color:var(--red);border-color:#fca5a5}
 .btn-danger:hover{background:var(--red-s)}
 
@@ -98,7 +108,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .zone-list{display:flex;flex-direction:column;gap:5px;max-height:260px;overflow-y:auto}
 .zone-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--radius);border:1px solid var(--border);cursor:pointer}
 .zone-item:hover{background:var(--surface2)}
-.zone-item.sel{border-color:var(--accent);background:#eef2ff}
+.zone-item.sel{border-color:var(--accent);background:#e8d870}
 .z-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .z-name{font-size:13px;flex:1;font-weight:500}
 .z-cat{font-size:10px;padding:1px 6px;border-radius:20px;background:var(--surface2);color:var(--muted)}
@@ -107,6 +117,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted)}
 .icon-btn:hover{background:var(--surface2);color:var(--text)}
 .icon-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+.tmpl-chip{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;border-radius:10px;border:2px solid var(--border);background:var(--surface);cursor:pointer;font-size:12px;font-weight:500;color:var(--text);transition:all .2s;min-width:80px}
+.tmpl-chip:hover{border-color:var(--accent);background:#f0ead0;color:var(--accent)}
+.tmpl-chip.active{border-color:var(--accent);background:#e8d880;color:var(--accent)}
 .tip-box{background:var(--surface2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.7}
 .ze-btn{width:100%;padding:9px;border-radius:var(--radius);border:1px solid var(--border);
   background:none;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;transition:all .15s}
@@ -185,13 +198,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   .kpi-row{grid-template-columns:1fr 1fr}
   .g2,.g2b,.g3,.ze-wrap,.beh-wrap,.fields-2{grid-template-columns:1fr}
 }
+@keyframes sub-pulse{0%,100%{opacity:1}50%{opacity:.65}}
+
+/* ── Merged Dashboard+Activity responsive layout ─────────────── */
+@media (max-width: 900px) {
+  #pg-dash > div:nth-child(3) {
+    grid-template-columns: 1fr !important;
+  }
+  #pg-dash > div:nth-child(3) > .card:last-child {
+    max-height: 420px !important;
+  }
+}
 </style>
 </head>
 <body>
 
 <nav class="nav">
   <div class="brand" id="nav-brand">
-    <div class="brand-dot"></div>
+    <svg class="brand-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fg1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4dd0c4"/>
+      <stop offset="100%" style="stop-color:#1a5f7a"/>
+    </linearGradient>
+  </defs>
+  <!-- Eye shape -->
+  <path d="M4 13 Q16 4 28 13 Q16 22 4 13Z" fill="none" stroke="url(#fg1)" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Pupil -->
+  <circle cx="16" cy="13" r="4" fill="url(#fg1)"/>
+  <circle cx="17" cy="12" r="1.2" fill="rgba(255,255,255,0.5)"/>
+  <!-- Flow lines -->
+  <path d="M6 20 Q10 18 14 21 Q18 24 22 21" fill="none" stroke="url(#fg1)" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M8 24 Q12 22 16 25 Q19 27 22 25" fill="none" stroke="url(#fg1)" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
+</svg>
     FlowSight
   </div>
   <button class="ntab on" onclick="showPage('live',this)">
@@ -214,13 +253,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
     Heat Map
   </button>
+
   <button class="ntab" onclick="showPage('settings',this)">
     <svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
     Settings
   </button>
-  <div class="nav-r">
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
     <div class="pill"><div class="dot-live" id="dot"></div><span id="status-lbl">Stopped</span></div>
-    <button class="btn btn-primary" id="main-btn" onclick="toggleEngine()">▶ Start</button>
+    <button class="btn btn-primary" id="main-btn" onclick="toggleEngine()"><span data-i18n="btn_start">▶ Start</span></button>
+    <!-- Language switcher -->
+    <div style="position:relative;display:inline-block">
+      <select id="lang-select" onchange="setLang(this.value)"
+        style="height:32px;border-radius:16px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#b0a888;font-size:11px;font-weight:700;padding:0 24px 0 10px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none">
+        <option value="en">EN - English</option>
+        <option value="th">TH - ภาษาไทย</option>
+      </select>
+      <svg style="position:absolute;right:6px;top:50%;transform:translateY(-50%);pointer-events:none;width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
   </div>
 </nav>
 
@@ -229,80 +278,180 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   <div class="kpi-row">
     <div class="kpi">
       <div class="kpi-val" id="k-cust" style="color:var(--blue)">0</div>
-      <div class="kpi-lbl">In Store</div>
+      <div class="kpi-lbl" data-i18n="kpi_in_store">In Store</div>
     </div>
     <div class="kpi">
-      <div class="kpi-val" id="k-staff" style="color:var(--accent)">0</div>
-      <div class="kpi-lbl">Staff</div>
+      <div class="kpi-val" id="k-staff" style="color:var(--amber)">0</div>
+      <div class="kpi-lbl" data-i18n="kpi_staff">Staff</div>
     </div>
     <div class="kpi">
       <div class="kpi-val" id="k-alert" style="color:var(--red)">0</div>
-      <div class="kpi-lbl">Need Help</div>
+      <div class="kpi-lbl" data-i18n="kpi_need_help">Need Help</div>
     </div>
     <div class="kpi">
       <div class="kpi-val" id="k-today" style="font-size:20px;padding-top:6px">—</div>
-      <div class="kpi-lbl">Today Total</div>
+      <div class="kpi-lbl" data-i18n="kpi_today">Today Total</div>
     </div>
   </div>
-  <div class="g2">
-    <div class="card">
-      <div class="card-hd"><h3>Live Feed</h3><span id="cam-lbl">Camera 1</span></div>
-      <div class="feed" id="feed-wrap">
-        <div class="feed-off" id="feed-off">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
-          <p>Press Start to begin detection</p>
+
+  <!-- Camera toolbar -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+    <div id="cam-tabs" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button id="view-tab-btn" class="btn" onclick="setCamView('tab')"
+        style="font-size:11px;padding:5px 10px" data-i18n="btn_tab_view">Tab View</button>
+      <button id="view-grid-btn" class="btn" onclick="setCamView('grid')"
+        style="font-size:11px;padding:5px 10px" data-i18n="btn_grid_view">Grid View</button>
+    </div>
+  </div>
+
+  <!-- Tab view: single camera -->
+  <div id="cam-tab-view">
+    <div class="g2">
+      <div class="card">
+        <div class="card-hd">
+          <h3><span data-i18n="lbl_live">Live Feed</span></h3>
+          <span id="cam-lbl">Camera 1</span>
         </div>
-        <canvas id="live-canvas" style="display:none"></canvas>
-        <div class="live-badge" id="live-badge">● LIVE</div>
+        <div class="feed" id="feed-wrap">
+          <div class="feed-off" id="feed-off">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+            <p><span data-i18n="lbl_press_start">Press Start to begin detection</span></p>
+          </div>
+          <!-- MJPEG img tag — browser handles streaming automatically -->
+          <img id="live-stream" style="display:none;width:100%;height:100%;object-fit:contain" alt="Live feed">
+          <div class="live-badge" id="live-badge">● LIVE</div>
+        </div>
+        <div class="hud-bar">
+          <div class="hud-item"><span class="hud-n" id="h-cust">0</span> <span data-i18n="hud_customers">customers</span></div>
+          <div class="hud-item"><span class="hud-n" id="h-staff">0</span> <span data-i18n="hud_staff">staff</span></div>
+          <div class="hud-item"><span class="hud-n" id="h-alert">0</span> <span data-i18n="hud_alerts">alerts</span></div>
+        </div>
       </div>
-      <div class="hud-bar">
-        <div class="hud-item"><span class="hud-n" id="h-cust">0</span> customers</div>
-        <div class="hud-item"><span class="hud-n" id="h-staff">0</span> staff</div>
-        <div class="hud-item"><span class="hud-n" id="h-alert">0</span> alerts</div>
+      <div class="card">
+        <div class="card-hd"><h3 data-i18n="lbl_recent_alerts">Recent Alerts</h3><p data-i18n="lbl_staff_assist">Staff assistance needed</p></div>
+        <div class="card-bd"><div class="alert-list" id="alert-list"><div class="empty"><span data-i18n="lbl_no_alerts">No alerts yet</span></div></div></div>
       </div>
     </div>
-    <div class="card">
-      <div class="card-hd"><h3>Recent Alerts</h3><p>Staff assistance needed</p></div>
-      <div class="card-bd"><div class="alert-list" id="alert-list"><div class="empty">No alerts yet</div></div></div>
+  </div>
+
+  <!-- Grid view: all cameras -->
+  <div id="cam-grid-view" style="display:none">
+    <div id="cam-grid" style="display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(380px,1fr))">
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="card-hd"><h3 data-i18n="lbl_recent_alerts">Recent Alerts</h3><p data-i18n="lbl_staff_assist">Staff assistance needed</p></div>
+      <div class="card-bd"><div class="alert-list" id="alert-list-grid"><div class="empty"><span data-i18n="lbl_no_alerts">No alerts yet</span></div></div></div>
     </div>
   </div>
 </div>
 
 <!-- DASHBOARD -->
 <div class="page" id="pg-dash">
+  <!-- ── Top toolbar ── -->
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap">
     <span style="font-size:12px;color:var(--muted)">Date</span>
-    <input type="date" id="rpt-date" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
-    <button class="btn btn-primary" onclick="exportReport('pdf')">Export PDF</button>
+    <input type="date" id="rpt-date" onchange="loadDash();loadActivity(1)" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
+    <button class="btn btn-primary" onclick="exportReport('pdf')"><span data-i18n="btn_export_pdf">Export PDF</span></button>
+    <button class="btn" onclick="exportActivityCSV()" style="display:flex;align-items:center;gap:5px">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span data-i18n="btn_export_csv">Export CSV</span>
+    </button>
+    <button class="btn" onclick="loadDash();loadActivity(1)"><span data-i18n="btn_refresh">Refresh</span></button>
+  </div>
 
-    <button class="btn" onclick="loadDash()">Refresh</button>
+  <!-- ── KPI row (unified — single source of truth) ── -->
+  <div class="kpi-row" style="margin-bottom:16px">
+    <div class="kpi"><div class="kpi-val" id="d-total" style="color:var(--blue)">—</div><div class="kpi-lbl" data-i18n="cnt_total_visitors">Customers</div></div>
+    <div class="kpi"><div class="kpi-val" id="d-inter" style="color:var(--amber)">—</div><div class="kpi-lbl" data-i18n="cnt_interested">Interested</div></div>
+    <div class="kpi"><div class="kpi-val" id="d-purch" style="color:var(--green)">—</div><div class="kpi-lbl" data-i18n="d_at_counter">At Counter</div></div>
+    <div class="kpi"><div class="kpi-val" id="d-zone" style="font-size:16px;padding-top:8px">—</div><div class="kpi-lbl" data-i18n="cnt_top_zone">Top Zone</div></div>
   </div>
-  <div class="kpi-row">
-    <div class="kpi"><div class="kpi-val" id="d-total" style="color:var(--blue)">—</div><div class="kpi-lbl">Customers</div></div>
-    <div class="kpi"><div class="kpi-val" id="d-inter" style="color:var(--amber)">—</div><div class="kpi-lbl">Interested</div></div>
-    <div class="kpi"><div class="kpi-val" id="d-purch" style="color:var(--green)">—</div><div class="kpi-lbl">At Counter</div></div>
-    <div class="kpi"><div class="kpi-val" id="d-zone" style="font-size:16px;padding-top:8px">—</div><div class="kpi-lbl">Top Zone</div></div>
-  </div>
-  <div class="g2b">
-    <div class="card">
-      <div class="card-hd"><h3>Hourly Activity</h3></div>
-      <div class="card-bd"><div class="chart-wrap"><canvas id="hourly-chart"></canvas></div></div>
+
+  <!-- ── Main two-column layout: charts left, activity right ── -->
+  <div style="display:grid;grid-template-columns:1fr 380px;gap:14px;align-items:start">
+
+    <!-- LEFT COLUMN: charts + AI insight -->
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div class="g2b" style="margin-bottom:0">
+        <div class="card">
+          <div class="card-hd"><h3 data-i18n="lbl_hourly_activity">Hourly Activity</h3></div>
+          <div class="card-bd"><div class="chart-wrap"><canvas id="hourly-chart"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><h3 data-i18n="lbl_zone_activity">Zone Activity</h3></div>
+          <div class="card-bd"><div class="zbar-list" id="zone-bars"><div class="empty">No data</div></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <h3 data-i18n="lbl_ai_insight">AI Insight</h3>
+          <button class="btn" id="insight-btn" onclick="loadInsight()" style="display:flex;align-items:center;gap:5px">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span data-i18n="btn_insight">Generate Insight</span>
+          </button>
+        </div>
+        <div class="card-bd">
+          <div id="insight-src" style="font-size:11px;color:var(--muted);margin-bottom:10px;display:none">Click Generate to analyze today's data</div>
+          <div id="insight-content" style="font-size:13px;color:var(--muted);display:none">—</div>
+        </div>
+      </div>
     </div>
-    <div class="card">
-      <div class="card-hd"><h3>Zone Activity</h3></div>
-      <div class="card-bd"><div class="zbar-list" id="zone-bars"><div class="empty">No data</div></div></div>
+
+    <!-- RIGHT COLUMN: Activity Log panel -->
+    <div class="card" style="display:flex;flex-direction:column;max-height:calc(100vh - 140px);min-width:0">
+      <!-- Panel header -->
+      <div class="card-hd" style="flex-shrink:0">
+        <h3 data-i18n="nav_activity">Activity Log</h3>
+        <span id="act-total-lbl" style="font-size:11px;color:var(--muted)">—</span>
+      </div>
+
+      <!-- Compact filters -->
+      <div style="padding:10px 12px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;flex-shrink:0;background:var(--surface2)">
+        <select id="act-behavior" onchange="loadActivity(1)"
+          style="flex:1;min-width:90px;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;outline:none">
+          <option value="" data-i18n="opt_all_beh">All behaviors</option>
+        </select>
+        <select id="act-zone" onchange="loadActivity(1)"
+          style="flex:1;min-width:90px;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;outline:none">
+          <option value="" data-i18n="opt_all_zones">All zones</option>
+        </select>
+        <select id="act-alert" onchange="loadActivity(1)"
+          style="flex:1;min-width:90px;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;outline:none">
+          <option value="" data-i18n="opt_all_events">All events</option>
+          <option value="1" data-i18n="opt_alerts_only">Alerts only</option>
+        </select>
+        <button class="btn" onclick="clearActivityFilters()" style="font-size:10px;padding:4px 8px" data-i18n="btn_clear_filters">Clear</button>
+      </div>
+
+      <!-- Scrollable table -->
+      <div style="overflow-y:auto;flex:1">
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead style="position:sticky;top:0;z-index:1">
+            <tr style="background:var(--surface2);border-bottom:1px solid var(--border)">
+              <th style="padding:8px 10px;text-align:left;font-weight:600;color:var(--muted);white-space:nowrap" data-i18n="col_time">Time</th>
+              <th style="padding:8px 10px;text-align:left;font-weight:600;color:var(--muted)" data-i18n="col_zone">Zone</th>
+              <th style="padding:8px 10px;text-align:left;font-weight:600;color:var(--muted)" data-i18n="col_behavior">Behavior</th>
+              <th style="padding:8px 10px;text-align:center;font-weight:600;color:var(--muted)" data-i18n="col_alert">⚠</th>
+            </tr>
+          </thead>
+          <tbody id="act-tbody">
+            <tr><td colspan="4" style="padding:28px;text-align:center;color:var(--muted)" data-i18n="lbl_loading">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination footer -->
+      <div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--surface2)">
+        <span id="act-page-info" style="font-size:11px;color:var(--muted)"></span>
+        <div style="display:flex;gap:4px">
+          <button id="act-prev" class="btn" onclick="loadActivity(_actPage-1)" style="font-size:10px;padding:4px 8px" data-i18n="btn_prev">← Prev</button>
+          <button id="act-next" class="btn" onclick="loadActivity(_actPage+1)" style="font-size:10px;padding:4px 8px" data-i18n="btn_next">Next →</button>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="card">
-    <div class="card-hd">
-      <h3>AI Insight</h3>
-      <button class="btn" onclick="loadInsight()">✦ Generate</button>
-    </div>
-    <div class="card-bd">
-      <div id="insight-src" style="font-size:11px;color:var(--muted);margin-bottom:10px">Click Generate to analyze today's data</div>
-      <div id="insight-content" style="font-size:13px;color:var(--muted)">—</div>
-    </div>
-  </div>
+
+  </div><!-- end 2-col grid -->
 </div>
 
 <!-- ZONES -->
@@ -310,35 +459,38 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   <div class="ze-wrap">
     <div class="ze-canvas-wrap">
       <div class="ze-toolbar">
-        <span style="font-size:13px;font-weight:600">Zone Editor</span>
+        <span style="font-size:13px;font-weight:600" data-i18n="lbl_zone_editor">Zone Editor</span>
+        <select id="ze-cam-select" onchange="zeChangeCam(this.value)"
+          style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--fg);cursor:pointer">
+        </select>
         <button class="btn" onclick="undoPt()">↩ Undo</button>
         <button class="btn btn-danger" onclick="clearCur()">Clear</button>
-        <button class="btn btn-primary" onclick="saveCur()">✓ Save Zone</button>
-        <button class="btn" onclick="loadFrame()">📷 Load Frame</button>
-        <button class="btn btn-danger" onclick="confirmClearAll()" style="margin-left:auto">Clear All</button>
+        <button class="btn btn-primary" onclick="saveCur()"><span data-i18n="btn_save_zone">✓ Save Zone</span></button>
+        <button class="btn" onclick="loadFrame()"><span data-i18n="btn_load_frame">📷 Load Frame</span></button>
+        <button class="btn btn-danger" onclick="confirmClearAll()" style="margin-left:auto"><span data-i18n="btn_clear_all">Clear All</span></button>
       </div>
       <canvas id="zone-canvas" width="960" height="540"></canvas>
     </div>
     <div class="ze-panel">
-      <h3>Add / Edit Zone</h3>
-      <div class="field"><label>Zone name</label>
-        <input id="zn-name" placeholder="e.g. Front shelf, Checkout"></div>
-      <div class="field"><label>Category</label>
+      <h3 data-i18n="lbl_add_zone">Add / Edit Zone</h3>
+      <div class="field"><label data-i18n="lbl_zone_name">Zone name</label>
+        <input id="zn-name" data-i18n-ph="ph_zone_name" placeholder="e.g. Front shelf, Checkout"></div>
+      <div class="field"><label data-i18n="lbl_category">Category</label>
         <div class="cat-chips" id="zn-cats">
-          <span class="cat-chip on" data-cat="product" onclick="selCat(this)">Product</span>
-          <span class="cat-chip" data-cat="checkout" onclick="selCat(this)">Checkout</span>
-          <span class="cat-chip" data-cat="seating" onclick="selCat(this)">Seating</span>
-          <span class="cat-chip" data-cat="staff" onclick="selCat(this)">Staff</span>
-          <span class="cat-chip" data-cat="entrance" onclick="selCat(this)">Entrance</span>
-          <span class="cat-chip" data-cat="custom" onclick="selCat(this)">Custom</span>
+          <span class="cat-chip on" data-cat="product" onclick="selCat(this)" data-i18n="cat_product">Product</span>
+          <span class="cat-chip" data-cat="checkout" onclick="selCat(this)" data-i18n="cat_checkout">Checkout</span>
+          <span class="cat-chip" data-cat="seating" onclick="selCat(this)" data-i18n="cat_seating">Seating</span>
+          <span class="cat-chip" data-cat="staff" onclick="selCat(this)" data-i18n="cat_staff">Staff</span>
+          <span class="cat-chip" data-cat="entrance" onclick="selCat(this)" data-i18n="cat_entrance">Entrance</span>
+          <span class="cat-chip" data-cat="custom" onclick="selCat(this)" data-i18n="cat_custom">Custom</span>
         </div>
       </div>
-      <div class="field"><label>Color</label>
+      <div class="field"><label data-i18n="lbl_color">Color</label>
         <div class="color-palette" id="zn-colors"></div>
       </div>
       <div class="zone-list" id="zone-list"><div class="empty">No zones yet</div></div>
-      <div class="tip-box">Click canvas to add points<br>Need ≥ 3 points to save<br>↩ Undo removes last point</div>
-      <button class="ze-btn ze-btn-save" onclick="saveAllZones()">💾 Save All Zones</button>
+      <div class="tip-box" data-i18n="tip_zones">Click canvas to add points<br>Need ≥ 3 points to save<br>↩ Undo removes last point</div>
+      <button class="ze-btn ze-btn-save" onclick="saveAllZones()"><span data-i18n="btn_save_zones">💾 Save All Zones</span></button>
     </div>
   </div>
 </div>
@@ -347,43 +499,56 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 <div class="page" id="pg-behaviors">
   <div class="beh-wrap">
     <div>
+      <!-- Template Picker -->
+      <div style="background:var(--surface2);border-radius:var(--radius);padding:14px;margin-bottom:16px;border:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px" data-i18n="lbl_tmpl_title">Quick Setup — Choose a Template</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="tmpl-chips">
+          <button class="tmpl-chip" onclick="applyTemplate('retail')" data-tmpl="retail"><span style="font-size:18px">🛍️</span><span data-i18n="tmpl_retail">Retail Shop</span></button>
+          <button class="tmpl-chip" onclick="applyTemplate('restaurant')" data-tmpl="restaurant"><span style="font-size:18px">🍽️</span><span data-i18n="tmpl_restaurant">Restaurant</span></button>
+          <button class="tmpl-chip" onclick="applyTemplate('wineshop')" data-tmpl="wineshop"><span style="font-size:18px">🍷</span><span data-i18n="tmpl_wineshop">Wine Shop</span></button>
+          <button class="tmpl-chip" onclick="applyTemplate('exhibition')" data-tmpl="exhibition"><span style="font-size:18px">🏛️</span><span data-i18n="tmpl_exhibition">Exhibition</span></button>
+          <button class="tmpl-chip" onclick="applyTemplate('cafe')" data-tmpl="cafe"><span style="font-size:18px">☕</span><span data-i18n="tmpl_cafe">Cafe</span></button>
+          <button class="tmpl-chip" onclick="applyTemplate('supermarket')" data-tmpl="supermarket"><span style="font-size:18px">🛒</span><span data-i18n="tmpl_supermarket">Supermarket</span></button>
+        </div>
+        <div id="tmpl-desc" style="font-size:11px;color:var(--muted);margin-top:8px;display:none"></div>
+      </div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <h2 style="font-size:15px;font-weight:600">Behavior Rules</h2>
+        <h2 style="font-size:15px;font-weight:600" data-i18n="lbl_beh_rules">Behavior Rules</h2>
         <div style="display:flex;gap:6px">
-          <button class="btn" onclick="resetBehaviors()">Reset to defaults</button>
+          <button class="btn" onclick="resetBehaviors()" data-i18n="btn_reset_def">Reset to defaults</button>
         </div>
       </div>
       <div class="beh-list" id="beh-list"><div class="empty">Loading...</div></div>
     </div>
     <div class="card beh-form">
-      <div class="card-hd"><h3 id="beh-form-title">Add Behavior</h3></div>
+      <div class="card-hd"><h3 id="beh-form-title" data-i18n="lbl_add_beh">Add Behavior</h3></div>
       <div class="card-bd">
         <input type="hidden" id="beh-edit-id">
-        <div class="field"><label>Name</label>
-          <input id="beh-name" placeholder="e.g. Interested, Waiting, Loitering"></div>
+        <div class="field"><label data-i18n="lbl_beh_name">Name</label>
+          <input id="beh-name" data-i18n-ph="ph_beh_name" placeholder="e.g. Interested, Waiting, Loitering"></div>
         <div class="fields-2">
-          <div class="field"><label>Trigger Zone</label>
+          <div class="field"><label data-i18n="lbl_trigger_zone">Trigger Zone</label>
             <select id="beh-zone">
-              <option value="any">Any zone</option>
-              <option value="product">Product area</option>
-              <option value="checkout">Checkout</option>
-              <option value="seating">Seating</option>
-              <option value="staff">Staff area</option>
-              <option value="entrance">Entrance</option>
-              <option value="floor">Floor (no zone)</option>
+              <option value="any" data-i18n="opt_any_zone">Any zone</option>
+              <option value="product" data-i18n="opt_product_area">Product area</option>
+              <option value="checkout" data-i18n="cat_checkout">Checkout</option>
+              <option value="seating" data-i18n="cat_seating">Seating</option>
+              <option value="staff" data-i18n="opt_staff_area">Staff area</option>
+              <option value="entrance" data-i18n="cat_entrance">Entrance</option>
+              <option value="floor" data-i18n="opt_floor">Floor (no zone)</option>
             </select>
           </div>
-          <div class="field"><label>Action</label>
+          <div class="field"><label data-i18n="lbl_action">Action</label>
             <select id="beh-action">
-              <option value="dwell">Dwell (stay)</option>
-              <option value="still">Still standing</option>
-              <option value="moving">Moving</option>
-              <option value="presence">Presence</option>
+              <option value="dwell" data-i18n="opt_dwell">Dwell (stay)</option>
+              <option value="still" data-i18n="opt_still">Still standing</option>
+              <option value="moving" data-i18n="opt_moving">Moving</option>
+              <option value="presence" data-i18n="opt_presence">Presence</option>
             </select>
           </div>
         </div>
         <div class="field" id="thresh-field">
-          <label>Duration — <span id="beh-dur-val">20</span> sec</label>
+          <label><span data-i18n="lbl_duration">Duration</span> — <span id="beh-dur-val">20</span> <span data-i18n="lbl_sec">sec</span></label>
           <div class="slider-row">
             <span style="font-size:11px;color:var(--muted)">0s</span>
             <input type="range" id="beh-threshold" min="0" max="600" value="20"
@@ -391,16 +556,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
             <span style="font-size:11px;color:var(--muted)">10m</span>
           </div>
         </div>
-        <div class="field"><label>Color</label>
+        <div class="field"><label data-i18n="lbl_color">Color</label>
           <div class="color-palette" id="beh-colors"></div>
         </div>
         <div class="toggle-row">
-          <span>Send staff alert</span>
+          <span><span data-i18n="lbl_send_alert">Send staff alert</span></span>
           <label class="tog"><input type="checkbox" id="beh-alert" checked><span class="tog-sl"></span></label>
         </div>
         <div style="display:flex;gap:8px;margin-top:12px">
-          <button class="btn btn-primary" style="flex:1" onclick="saveBehavior()">Save</button>
-          <button class="btn" onclick="clearBehForm()">Cancel</button>
+          <button class="btn btn-primary" style="flex:1" onclick="saveBehavior()"><span data-i18n="btn_save">Save</span></button>
+          <button class="btn" onclick="clearBehForm()"><span data-i18n="btn_cancel">Cancel</span></button>
         </div>
       </div>
     </div>
@@ -412,10 +577,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   <div class="g2b" style="margin-bottom:14px">
     <div class="card">
       <div class="card-hd">
-        <h3>🔥 Customer Heat Map</h3>
-        <div style="display:flex;gap:6px">
-          <button class="btn" onclick="resetHeatmap()">Reset</button>
-          <label style="font-size:12px;color:var(--muted);align-self:center">Intensity</label>
+        <h3 data-i18n="lbl_heatmap">🔥 Customer Heat Map</h3>
+        <div style="display:flex;gap:6px;align-items:center">
+          <select id="hm-cam-select" onchange="onHeatmapCamChange()"
+            style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--fg);cursor:pointer">
+          </select>
+          <button class="btn" onclick="resetHeatmap()" data-i18n="btn_reset">Reset</button>
+          <label style="font-size:12px;color:var(--muted);align-self:center" data-i18n="lbl_intensity">Intensity</label>
           <input type="range" id="hm-alpha" min="20" max="80" value="50"
             style="width:80px;accent-color:var(--accent)" oninput="refreshHeatmap()">
         </div>
@@ -424,60 +592,98 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
         <img id="heatmap-img" style="width:100%;display:block" alt="Heat Map">
       </div>
       <div style="padding:10px 16px;background:var(--surface2);font-size:12px;color:var(--muted)">
-        Brighter = more customer activity. Updates every 5 seconds while detection is running.
+        <span data-i18n="lbl_heatmap_desc">Brighter = more customer activity. Updates every 5 seconds while detection is running.</span>
       </div>
     </div>
     <div class="card">
-      <div class="card-hd"><h3>📍 Top Activity Zones</h3></div>
+      <div class="card-hd"><h3 data-i18n="lbl_top_zones">📍 Top Activity Zones</h3></div>
       <div class="card-bd">
-        <div id="hm-zones"><div class="empty">Start detection to see zone activity</div></div>
+        <div id="hm-zones"><div class="empty"><span data-i18n="lbl_zone_hint">Start detection to see zone activity</span></div></div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- SETTINGS -->
+
 <div class="page" id="pg-settings">
   <div class="set-wrap">
     <div class="card">
-      <div class="card-hd"><h3>Settings</h3></div>
+      <div class="card-hd"><h3 data-i18n="nav_settings">Settings</h3></div>
       <div class="card-bd">
-        <div class="sec-title">Branding</div>
+
+        <div class="sec-title" data-i18n="sec_cameras">Cameras</div>
+
+        <!-- Camera Manager -->
+        <div id="cam-manager">
+          <div id="cam-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+          <button class="btn" onclick="addCamera()" style="display:flex;align-items:center;gap:6px;width:100%;justify-content:center;border:1px dashed var(--border);background:transparent">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span data-i18n="btn_add_camera">Add Camera</span>
+          </button>
+          <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn" onclick="saveCameras()" style="background:var(--accent);color:#2a2a28">
+              <span data-i18n="btn_save_cameras">Save Cameras</span>
+            </button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="sec-title" data-i18n="sec_detect">Detection</div>
         <div class="fields-2">
-          <div class="field"><label>App name</label><input id="s-brand" placeholder="FlowSight"></div>
-          <div class="field"><label>Tagline</label><input id="s-tagline" placeholder="Retail Intelligence"></div>
+          <div class="field"><label data-i18n="lbl_confidence">Confidence (0.1–0.9)</label><input id="s-conf" type="number" step="0.05" min="0.1" max="0.9"></div>
         </div>
         <div class="divider"></div>
-        <div class="sec-title">Camera</div>
-        <div class="field"><label>RTSP URL</label><input id="s-rtsp" placeholder="rtsp://user:pass@192.168.x.x/stream2"></div>
-        <div class="divider"></div>
-        <div class="sec-title">Detection</div>
-        <div class="fields-2">
-          <div class="field"><label>Confidence (0.1–0.9)</label><input id="s-conf" type="number" step="0.05" min="0.1" max="0.9"></div>
-        </div>
-        <div class="divider"></div>
-        <div class="sec-title">AI Insight (Optional)</div>
-        <div style="background:var(--surface2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">
-          <b style="color:var(--text)">Gemini API</b> — Free, 1500 req/day — get key at <b>aistudio.google.com</b><br>
-          <b style="color:var(--text)">Claude API</b> — Paid ~$0.001/call — get key at <b>console.anthropic.com</b>
-        </div>
-        <div class="fields-2">
-          <div class="field"><label>Gemini API Key (Free)</label><input id="s-gemini" type="password" placeholder="AIza..."></div>
-          <div class="field"><label>Claude API Key</label><input id="s-claude" type="password" placeholder="sk-ant-..."></div>
+        <div class="sec-title" data-i18n="sec_ai">AI Insight (Optional)</div>
+        <div id="insight-api-fields">
+          <div style="background:var(--surface2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7">
+            <span data-i18n="lbl_api_info_gemini"><b style="color:var(--text)">Gemini API</b> — Free, 1500 req/day</span> — get key at <b>aistudio.google.com</b><br>
+            <span data-i18n="lbl_api_info_claude"><b style="color:var(--text)">Claude API</b> — Paid ~$0.001/call</span> — get key at <b>console.anthropic.com</b>
+          </div>
+          <div class="fields-2">
+            <div class="field"><label data-i18n="lbl_gemini_key">Gemini API Key (Free)</label><input id="s-gemini" type="password" placeholder="AIza..."></div>
+            <div class="field"><label data-i18n="lbl_claude_key">Claude API Key</label><input id="s-claude" type="password" placeholder="sk-ant-..."></div>
+          </div>
         </div>
         <div class="divider"></div>
         <div class="divider"></div>
-        <div class="sec-title">Privacy</div>
+        
+        <div class="sec-title" data-i18n="sec_privacy">Privacy</div>
         <div class="toggle-row" style="border-top:none">
-          <div><span style="font-size:14px;font-weight:500">Face Anonymization</span>
-            <div style="font-size:12px;color:var(--muted)">Blur faces for privacy compliance</div></div>
+          <div><span style="font-size:14px;font-weight:500" data-i18n="lbl_face_anon">Face Anonymization</span>
+            <div style="font-size:12px;color:var(--muted)" data-i18n="lbl_face_desc">Blur faces for privacy compliance</div></div>
           <label class="tog"><input type="checkbox" id="s-anon"><span class="tog-sl"></span></label>
         </div>
         <div style="margin-top:16px">
-          <button class="btn btn-primary" style="width:100%;padding:10px" onclick="saveSettings()">Save Settings</button>
+          <button class="btn btn-primary" style="width:100%;padding:10px" onclick="saveSettings()"><span data-i18n="btn_save_set">Save Settings</span></button>
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Bottom-right watermark -->
+<div style="position:fixed;bottom:14px;right:18px;z-index:50;pointer-events:none;user-select:none;opacity:0.9">
+  <!-- FlowSight eye+flow icon -->
+  <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.6);padding:5px 10px 5px 8px;border-radius:10px;backdrop-filter:blur(4px)">
+    <svg width="24" height="24" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="wm1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#4dd0c4"/>
+          <stop offset="100%" style="stop-color:#1a5f7a"/>
+        </linearGradient>
+      </defs>
+      <path d="M4 13 Q16 4 28 13 Q16 22 4 13Z" fill="none" stroke="url(#wm1)" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="16" cy="13" r="4" fill="url(#wm1)"/>
+      <circle cx="17.2" cy="11.8" r="1.3" fill="rgba(255,255,255,0.55)"/>
+      <path d="M6 20 Q10 17.5 14 20.5 Q18 23.5 22 20.5" fill="none" stroke="url(#wm1)" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M8 24.5 Q12 22 16 25 Q19.5 27.5 23 25" fill="none" stroke="url(#wm1)" stroke-width="1.3" stroke-linecap="round" opacity="0.65"/>
+    </svg>
+    <span style="font-size:12px;font-weight:800;letter-spacing:1.6px;color:#1a5f7a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">FLOWSIGHT</span>
+    <span style="width:1px;height:28px;background:#9ca3af;display:inline-block;flex-shrink:0"></span>
+    <!-- AA&CC actual photo, cropped to logo area -->
+    <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAMqBLADASIAAhEBAxEB/8QAHAABAAIDAQEBAAAAAAAAAAAAAAcIAQUGBAID/8QAWhABAAEDAwAGBgUGBwkNCAMAAAECAwQFBhEHEiExQVEIE2FxgZEUIjKhsRUzQlJ1wRYjJDRicoIXQ3SSk7LR0vAnNTY3U1RVY3ODs8LhREVkZZSi4vEYJsP/xAAcAQEAAwADAQEAAAAAAAAAAAAAAQIDBAUGBwj/xAAyEQEAAgIBBAECBAQGAwEAAAAAAQIDEQQFEiExQQYTIlFhgRQycaEHM5GxwdEVUmLx/9oADAMBAAIRAxEAPwC5YAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHIAAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/Z"
+         style="height:36px;width:auto;object-fit:contain;mix-blend-mode:multiply"
+         alt="AA&CC">
   </div>
 </div>
 
@@ -504,7 +710,10 @@ function showPage(id, btn){
   if(id==="zones")    initZoneEditor();
   if(id==="behaviors")loadBehaviors();
   if(id==="heatmap")  startHeatmapPoll();
+  if(id==="dash") { loadDash(); loadActivity(1); }
   else                stopHeatmapPoll();
+  // Re-apply translations after tab content renders (small delay lets loadDash etc finish)
+  setTimeout(function(){ if(typeof window.applyLang==="function") window.applyLang(); }, 50);
 }
 function buildColorPalette(containerId, selectedColor, onSelect){
   const el=$(containerId); el.innerHTML="";
@@ -522,7 +731,7 @@ function getSelectedColor(containerId){
 }
 function confirm_(title,msg,onYes){
   const bg=document.createElement("div"); bg.className="modal-bg";
-  bg.innerHTML=`<div class="modal"><h3>${title}</h3><p>${msg}</p><div class="modal-btns"><button class="btn" id="cn">Cancel</button><button class="btn btn-danger" id="cy">Delete</button></div></div>`;
+  bg.innerHTML=`<div class="modal"><h3>${title}</h3><p>${msg}</p><div class="modal-btns"><button class="btn" id="cn">${t("btn_cancel","Cancel")}</button><button class="btn btn-danger" id="cy">${t("btn_delete","Delete")}</button></div></div>`;
   document.body.appendChild(bg);
   bg.querySelector("#cy").onclick=()=>{document.body.removeChild(bg);onYes();};
   bg.querySelector("#cn").onclick=()=>document.body.removeChild(bg);
@@ -532,60 +741,48 @@ function confirm_(title,msg,onYes){
 let running=false, soundOn=true;
 async function toggleEngine(){
   const btn=$("main-btn"); btn.disabled=true;
+  const isTH = (window.isTH ? window.isTH() : (localStorage.getItem("fs_lang")||"en")==="th");
   try{
     if(!running){
       const r=await fetch("/api/start",{method:"POST"}).then(r=>r.json()).catch(()=>({ok:false,msg:"Server not responding"}));
       if(r.ok){
-        running=true; updateNav(); startStream();
-        toast("Detection started ✓");
+        running=true; updateNav(); startCamPolling();
+        toast(t("t_started"));
       } else {
-        toast(r.msg||"Failed to start — check RTSP URL in Settings","err");
+        toast(r.msg||t("t_start_fail"),"err");
       }
     } else {
-      btn.textContent="⏳ Stopping...";
+      btn.innerHTML="⏳ " + t("lbl_stopping","Stopping...");
       await fetch("/api/stop",{method:"POST"}).catch(()=>{});
-      // Wait a moment for engine to fully stop
       await new Promise(r=>setTimeout(r,1500));
-      running=false; updateNav(); stopStream();
-      toast("Stopped");
+      running=false; updateNav(); stopCamPolling();
+      // Clear all canvases
+      document.querySelectorAll("canvas[id^='grid-canvas-']").forEach(c=>{
+        c.style.display="none";
+        const off = document.getElementById(c.id.replace("grid-canvas-","grid-off-"));
+        if(off) off.style.display="flex";
+      });
+      const lc=$("live-canvas"); if(lc) lc.style.display="none";
+      const fo=$("feed-off"); if(fo) fo.style.display="flex";
+      toast(t("t_stopped"));
     }
   } finally { btn.disabled=false; }
 }
 function updateNav(){
   const dot=$("dot"),lbl=$("status-lbl"),btn=$("main-btn"),badge=$("live-badge");
+  const isTH = (window.isTH ? window.isTH() : (localStorage.getItem("fs_lang")||"en")==="th");
   dot.className="dot-live"+(running?" on":"");
-  lbl.textContent=running?"Running":"Stopped";
+  lbl.textContent=running?(t("status_running","Running")):(t("lbl_cam_status_stopped","Stopped"));
   btn.className="btn "+(running?"btn-danger":"btn-primary");
-  btn.textContent=running?"⏹ Stop":"▶ Start";
+  btn.innerHTML=running?`⏹ ${t("btn_stop","⏹ Stop").replace("⏹ ","")}`:`▶ ${t("btn_start","▶ Start").replace("▶ ","")}`;
   if(badge) badge.style.display=running?"block":"none";
-}
-
-// ── Stream ─────────────────────────────────────────────────────────────────────
-let streamTimer=null, sCvs=null, sCtx=null;
-function startStream(){
-  $("feed-off").style.display="none"; $("live-canvas").style.display="block";
-  sCvs=$("live-canvas"); sCtx=sCvs.getContext("2d"); if(streamTimer)return; pollFrame();
-}
-function pollFrame(){
-  const img=new Image();
-  img.onload=()=>{ if(sCvs.width!==img.naturalWidth)sCvs.width=img.naturalWidth;
-    if(sCvs.height!==img.naturalHeight)sCvs.height=img.naturalHeight;
-    sCtx.drawImage(img,0,0); URL.revokeObjectURL(img.src);
-    if(streamTimer!==false) streamTimer=setTimeout(pollFrame,80); };
-  img.onerror=()=>{ if(streamTimer!==false) streamTimer=setTimeout(pollFrame,500); };
-  fetch("/api/jpeg",{cache:"no-store"}).then(r=>r.blob()).then(b=>img.src=URL.createObjectURL(b))
-    .catch(()=>{ if(streamTimer!==false) streamTimer=setTimeout(pollFrame,500); });
-}
-function stopStream(){
-  streamTimer=false; clearTimeout(streamTimer); streamTimer=null;
-  $("feed-off").style.display="flex"; $("live-canvas").style.display="none";
 }
 
 // ── Polling ─────────────────────────────────────────────────────────────────────
 let prevAlertCnt=0;
 function pollHud(){
   fetch("/api/hud").then(r=>r.json()).then(d=>{
-    if(d.running!==running){running=d.running;updateNav();if(running)startStream();else stopStream();}
+    if(d.running!==running){running=d.running;updateNav();if(running)startCamPolling();else stopCamPolling();}
     ["cust","seller","alert"].forEach(k=>{
       $("k-"+k).textContent=d[k]??0;
       if($("h-"+k)) $("h-"+k).textContent=d[k]??0;
@@ -636,8 +833,14 @@ async function loadDash(){
     if(hourlyChart)hourlyChart.destroy();
     Chart.defaults.color="#888";
     hourlyChart=new Chart(ctx,{type:"bar",data:{labels:d.labels,datasets:d.datasets},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"top",labels:{usePointStyle:true,boxWidth:8,font:{size:11}}}},
-        scales:{x:{stacked:true,grid:{display:false},ticks:{maxTicksLimit:8}},y:{stacked:true,grid:{color:"#f0f0f4"}}}}});
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:"top",labels:{usePointStyle:true,boxWidth:8,font:{size:11}}}},
+        scales:{
+          x:{stacked:true,grid:{display:false},ticks:{maxTicksLimit:8},
+            title:{display:true,text:window.t?window.t("axis_time","Time of Day"):"Time of Day",color:"#888",font:{size:11}}},
+          y:{stacked:true,grid:{color:"#f0f0f4"},
+            title:{display:true,text:window.t?window.t("axis_events","Events"):"Events",color:"#888",font:{size:11}}}
+        }}});
   }).catch(()=>{});
   fetch("/api/zones_activity").then(r=>r.json()).then(data=>{
     const el=$("zone-bars");
@@ -655,12 +858,12 @@ function exportReport(fmt){
   window.open(`/api/report/pdf?date=${date}`,"_blank");
 }
 async function loadInsight(){
-  const date=$("rpt-date").value||new Date().toISOString().slice(0,10);
-  $("insight-src").textContent="Analyzing...";
-  $("insight-content").textContent="⏳ Generating...";
-  const d=await fetch(`/api/insight?date=${date}`).then(r=>r.json()).catch(()=>({ok:false}));
-  $("insight-src").textContent=d.source||"Analysis";
-  $("insight-content").innerHTML=d.html||"<span style='color:var(--muted)'>No data</span>";
+  const date = $("rpt-date")?.value || new Date().toISOString().slice(0,10);
+  const d    = await fetch(`/api/insight?date=${date}`).then(r=>r.json()).catch(()=>({ok:false,msg:"error"}));
+  const srcEl  = $("insight-src");
+  const cntEl  = $("insight-content");
+  if(srcEl){ srcEl.textContent = d.source||"Analysis"; srcEl.style.display="inline-block"; }
+  if(cntEl){ cntEl.innerHTML = d.html||"<span style='color:var(--muted)'>No data</span>"; cntEl.style.display="block"; }
 }
 
 // ── Zone Editor ───────────────────────────────────────────────────────────────
@@ -669,19 +872,40 @@ function initZoneEditor(){
   zCvs=$("zone-canvas"); zCtx=zCvs.getContext("2d");
   zCvs.onclick=onZoneClick;
   buildColorPalette("zn-colors",curColor,c=>curColor=c);
+  if(_activeCam) _zeCam=_activeCam;
+  zePopulateCamSelect();
   if(!Object.keys(zones).length) loadZones();
 }
+// ── Zone Editor camera state ──────────────────────────────────────────────────
+let _zeCam = "cam_0"; // which camera the zone editor is currently editing
+
+function zePopulateCamSelect(){
+  const sel=$("ze-cam-select");
+  if(!sel) return;
+  const cams=_cameras&&_cameras.length?_cameras:[{id:"cam_0",name:"Camera 1"}];
+  sel.innerHTML=cams.map(c=>`<option value="${c.id}"${c.id===_zeCam?" selected":""}>${c.name||c.id}</option>`).join("");
+}
+
+function zeChangeCam(camId){
+  _zeCam=camId;
+  zones={};curPts=[];zEditId=null;
+  renderZoneList();redrawZones();
+  loadZones();
+  toast(`Switched to ${_cameras.find(c=>c.id===camId)?.name||camId}`);
+}
+
 async function loadFrame(){
-  toast("Loading frame...");
-  const r=await fetch("/api/frame").then(r=>r.json()).catch(()=>({ok:false}));
-  if(!r.ok){toast("No frame — start detection first","err");return;}
+  toast(t("t_frame_load"));
+  const camId=_zeCam||"cam_0";
+  const r=await fetch(`/api/frame/${camId}`).then(r=>r.json()).catch(()=>({ok:false}));
+  if(!r.ok){toast(t("t_no_frame")+" ("+camId+")","err");return;}
   const img=new Image();
-  img.onload=()=>{zCvs.width=r.width;zCvs.height=r.height;zCtx._bg=img;redrawZones();toast("Frame loaded ✓");};
+  img.onload=()=>{zCtx._bg=img;redrawZones();toast(t("t_frame_ok"));};  // canvas stays 960×540
   img.src="data:image/jpeg;base64,"+r.image;
 }
 async function loadZones(){
   const r=await fetch("/api/zones/load").then(r=>r.json()).catch(()=>({}));
-  const cam=r.cam_0||{};
+  const cam=r[_zeCam]||{};
   zones={};
   for(const[id,data] of Object.entries(cam)){
     if(Array.isArray(data)) zones[id]={name:id,category:"product",color:COLORS[0],points:data};
@@ -731,26 +955,30 @@ function undoPt(){if(curPts.length){curPts.pop();redrawZones();}}
 function clearCur(){curPts=[];redrawZones();}
 function saveCur(){
   const name=$("zn-name").value.trim();
-  if(!name){toast("Enter a zone name","err");return;}
-  if(curPts.length<3){toast("Need at least 3 points","err");return;}
+  if(!name){toast(t("t_zone_name"),"err");return;}
+  if(curPts.length<3){toast(t("t_zone_pts"),"err");return;}
   const id=zEditId||("z_"+Date.now());
   zones[id]={name,category:curCat,color:curColor,points:[...curPts]};
   curPts=[];zEditId=null;renderZoneList();redrawZones();toast(`Zone "${name}" saved`);
 }
 async function saveAllZones(){
-  const payload={cam_0:{}};
-  for(const[id,z] of Object.entries(zones)) payload.cam_0[id]=z;
-  const r=await fetch("/api/zones/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}).then(r=>r.json()).catch(()=>({ok:false}));
-  r.ok?toast("Zones saved to file ✓"):toast("Save failed","err");
+  // Load full config first so we don't overwrite other cameras' zones
+  let cfg={};
+  try{ cfg=await fetch("/api/zones/load").then(r=>r.json()); }catch(e){}
+  cfg[_zeCam]={};
+  for(const[id,z] of Object.entries(zones)) cfg[_zeCam][id]=z;
+  cfg["_meta"]={"w":zCvs.width,"h":zCvs.height};  // record authoring resolution
+  const r=await fetch("/api/zones/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(cfg)}).then(r=>r.json()).catch(()=>({ok:false}));
+  r.ok?toast(t("t_zones_saved")):toast("Save failed","err");
 }
-function confirmClearAll(){confirm_("Clear all zones?","This will delete every zone and cannot be undone.",async()=>{
+function confirmClearAll(){confirm_(t("c_clear_zones"),"This will delete every zone and cannot be undone.",async()=>{
   zones={};curPts=[];renderZoneList();redrawZones();
-  await fetch("/api/zones/clear",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({cam:"cam_0"})});
-  toast("All zones cleared");});}
+  await fetch("/api/zones/clear",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({cam:_zeCam})});
+  toast(t("t_zones_clear"));});}
 function deleteZone(id){confirm_(`Delete "${zones[id]?.name||id}"?`,"Remove this zone from canvas and file.",async()=>{
   delete zones[id];renderZoneList();redrawZones();
-  await fetch("/api/zones/delete",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({zone_id:id})});
-  toast("Zone deleted");});}
+  await fetch("/api/zones/delete",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({zone_id:id,cam:_zeCam})});
+  toast(t("t_zone_del"));});}
 function editZone(id){
   const z=zones[id]; if(!z)return;
   $("zn-name").value=z.name||id; curColor=z.color||COLORS[0]; curCat=z.category||"product";
@@ -781,35 +1009,345 @@ function selCat(chip){
 }
 
 // ── Behaviors ──────────────────────────────────────────────────────────────────
+// ── Multi-Camera Manager ──────────────────────────────────────────────────────
+let _cameras   = [];
+let _activeCam = null;
+let _camView   = localStorage.getItem("cam_view") || "tab";
+let _camPolls  = {}; // cam_id -> intervalId
+
+async function loadCameras(){
+  const d = await fetch("/api/cameras").then(r=>r.json()).catch(()=>({cameras:[]}));
+  _cameras = d.cameras || [];
+  if(!_cameras.length){
+    _cameras = [{id:"cam_0",name:"Camera 1",rtsp_url:"",enabled:true}];
+  }
+  if(!_activeCam || !_cameras.find(c=>c.id===_activeCam)){
+    _activeCam = _cameras[0]?.id || "cam_0";
+  }
+  renderCamTabs();
+  renderCamGrid();
+  renderCamManagerList();
+}
+
+function renderCamTabs(){
+  const tabs = document.getElementById("cam-tabs");
+  if(!tabs) return;
+  const isTH = (window.isTH ? window.isTH() : (localStorage.getItem("fs_lang")||"en")==="th");
+  tabs.innerHTML = _cameras.map(c => `
+    <button onclick="switchCam('${c.id}')"
+      style="padding:5px 12px;border-radius:16px;border:1px solid var(--border);
+             font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;
+             background:${c.id===_activeCam?'var(--accent)':'var(--surface2)'};
+             color:${c.id===_activeCam?'white':'var(--muted)'}">
+      ${c.name}
+      <span style="margin-left:4px;font-size:9px;opacity:.8"
+        id="cam-tab-dot-${c.id}">●</span>
+    </button>`).join("");
+}
+
+function renderCamGrid(){
+  const grid = document.getElementById("cam-grid");
+  if(!grid) return;
+  const isTH = (window.isTH ? window.isTH() : (localStorage.getItem("fs_lang")||"en")==="th");
+  grid.innerHTML = _cameras.map(c => `
+    <div class="card" style="overflow:hidden">
+      <div class="card-hd" style="padding:10px 14px">
+        <h3 style="font-size:13px">${c.name}</h3>
+        <span id="grid-status-${c.id}" style="font-size:10px;color:var(--muted)"></span>
+      </div>
+      <div style="position:relative;background:#000;aspect-ratio:16/9">
+        <canvas id="grid-canvas-${c.id}"
+          style="width:100%;height:100%;display:none;object-fit:contain"></canvas>
+        <div id="grid-off-${c.id}"
+          style="position:absolute;inset:0;display:flex;flex-direction:column;
+                 align-items:center;justify-content:center;color:#666;gap:6px">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+          </svg>
+          <span style="font-size:11px">${t("lbl_press_start","Press Start to connect")}</span>
+        </div>
+      </div>
+      <div style="padding:6px 14px;font-size:11px;color:var(--muted);display:flex;gap:12px"
+           id="grid-hud-${c.id}">
+        <span>0 ${t("hud_customers","customers")}</span>
+        <span>0 ${t("hud_staff","staff")}</span>
+        <span>0 ${t("hud_alerts","alerts")}</span>
+      </div>
+    </div>`).join("");
+}
+
+function switchCam(camId){
+  _activeCam = camId;
+  renderCamTabs();
+  const lbl = document.getElementById("cam-lbl");
+  const cam = _cameras.find(c=>c.id===camId);
+  if(lbl && cam) lbl.textContent = cam.name;
+  // Reconnect MJPEG stream to new camera
+  if(_pollRunning && _camView === "tab"){
+    _connectMjpeg(camId, "live-stream");
+  }
+}
+
+function setCamView(mode){
+  _camView = mode;
+  localStorage.setItem("cam_view", mode);
+  document.getElementById("cam-tab-view").style.display  = mode==="tab"  ? "" : "none";
+  document.getElementById("cam-grid-view").style.display = mode==="grid" ? "" : "none";
+  const tabBtn  = document.getElementById("view-tab-btn");
+  const gridBtn = document.getElementById("view-grid-btn");
+  if(tabBtn){  tabBtn.style.background  = mode==="tab"  ? "var(--accent)" : ""; tabBtn.style.color  = mode==="tab"  ? "#2a2a28" : ""; }
+  if(gridBtn){ gridBtn.style.background = mode==="grid" ? "var(--accent)" : ""; gridBtn.style.color = mode==="grid" ? "#2a2a28" : ""; }
+  // Reconnect MJPEG streams for the new view if running
+  if(mode === "tab"){
+    // Disconnect grid streams
+    document.querySelectorAll("img[id^='grid-stream-']").forEach(img=>{ img.src=""; });
+    _connectMjpeg(_activeCam, "live-stream");
+  } else {
+    // Disconnect tab stream
+    const ls = document.getElementById("live-stream");
+    if(ls) ls.src = "";
+    for(const cam of _cameras) _connectGridMjpeg(cam.id);
+  }
+}
+
+async function toggleCam(camId){
+  const cam = _cameras.find(c=>c.id===camId);
+  if(!cam) return;
+  const btn = document.getElementById(`grid-btn-${camId}`);
+  const isTH = (window.isTH ? window.isTH() : (localStorage.getItem("fs_lang")||"en")==="th");
+  const status = await fetch("/api/cameras").then(r=>r.json())
+    .then(d => (d.cameras||[]).find(c=>c.id===camId)?.running);
+  if(status){
+    await fetch(`/api/stop/${camId}`, {method:"POST"});
+    if(btn) btn.innerHTML = `▶ ${t("btn_start","▶ Start").replace("▶ ","")}`;
+    if(btn) btn.style.background = "";
+  } else {
+    await fetch(`/api/start/${camId}`, {method:"POST"});
+    if(btn) btn.innerHTML = `⏹ ${t("btn_stop","⏹ Stop").replace("⏹ ","")}`;
+    if(btn) btn.style.background = "#ef4444";
+  }
+}
+
+// Camera settings manager
+function renderCamManagerList(){
+  const list = document.getElementById("cam-list");
+  if(!list) return;
+  const isTH = (window.isTH ? window.isTH() : (localStorage.getItem("fs_lang")||"en")==="th");
+  list.innerHTML = _cameras.map((c,i) => `
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:700;color:var(--muted);min-width:20px">#${i+1}</span>
+        <input value="${c.name}" onchange="_cameras[${i}].name=this.value;renderCamTabs();renderCamGrid()"
+          placeholder="${t("lbl_cam_name","Camera name")}"
+          style="flex:1;padding:6px 10px;border-radius:6px;border:1px solid var(--border);
+                 background:var(--surface);color:var(--text);font-size:12px;font-weight:600;outline:none">
+        <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);cursor:pointer">
+          <input type="checkbox" ${c.enabled?"checked":""} onchange="_cameras[${i}].enabled=this.checked">
+          ${t("lbl_enable","Enable")}
+        </label>
+        <button onclick="removeCamera(${i})"
+          style="padding:4px 8px;border-radius:6px;border:1px solid #fca5a5;
+                 background:#fef2f2;color:#ef4444;cursor:pointer;font-size:11px">
+          ✕
+        </button>
+      </div>
+      <input value="${c.rtsp_url||""}" onchange="_cameras[${i}].rtsp_url=this.value"
+        placeholder="rtsp://user:pass@192.168.x.x/stream"
+        style="width:100%;padding:7px 10px;border-radius:6px;border:1px solid var(--border);
+               background:var(--surface);color:var(--text);font-size:12px;
+               font-family:monospace;outline:none;box-sizing:border-box">
+    </div>`).join("");
+}
+
+function addCamera(){
+  const n = _cameras.length + 1;
+  _cameras.push({id:`cam_${n-1}`,name:`Camera ${n}`,rtsp_url:"",enabled:true});
+  renderCamManagerList();
+  renderCamTabs();
+  renderCamGrid();
+}
+
+function removeCamera(idx){
+  if(_cameras.length <= 1){ toast(t("t_cam_min","Need at least 1 camera"),"err"); return; }
+  _cameras.splice(idx, 1);
+  renderCamManagerList();
+  renderCamTabs();
+  renderCamGrid();
+}
+
+async function saveCameras(){
+  // Regenerate IDs based on order
+  _cameras = _cameras.map((c,i) => ({...c, id:`cam_${i}`}));
+  const r = await fetch("/api/cameras/save", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({cameras: _cameras})
+  }).then(r=>r.json()).catch(()=>({ok:false}));
+  if(r.ok){
+    renderCamTabs(); renderCamGrid();
+    toast(t("t_cam_saved","Cameras saved ✓"));
+  } else {
+    toast(r.msg||"Save failed","err");
+  }
+}
+
+// ── Multi-camera MJPEG streaming (smooth) ────────────────────────────────────
+let _pollRunning = false;
+
+function _connectMjpeg(camId, imgId){
+  const img = document.getElementById(imgId);
+  if(!img) return;
+  img.src = `/api/stream/${camId}?t=${Date.now()}`;
+  img.style.display = "block";
+  const off = document.getElementById("feed-off");
+  if(off) off.style.display = "none";
+  img.onerror = () => {
+    if(_pollRunning) setTimeout(()=>_connectMjpeg(camId, imgId), 2000);
+  };
+}
+
+function _connectGridMjpeg(camId){
+  const imgId = `grid-stream-${camId}`;
+  let img = document.getElementById(imgId);
+  if(!img){
+    const offEl = document.getElementById(`grid-off-${camId}`);
+    const parent = offEl?.parentElement;
+    if(!parent) return;
+    img = document.createElement("img");
+    img.id = imgId;
+    img.style.cssText = "width:100%;height:100%;object-fit:contain;display:none;position:absolute;inset:0;background:#000";
+    parent.appendChild(img);
+  }
+  img.src = `/api/stream/${camId}?t=${Date.now()}`;
+  img.style.display = "block";
+  const offEl = document.getElementById(`grid-off-${camId}`);
+  if(offEl) offEl.style.display = "none";
+  img.onerror = () => {
+    if(_pollRunning) setTimeout(()=>_connectGridMjpeg(camId), 2000);
+  };
+}
+
+async function pollAllCams(){
+  if(!_pollRunning) return;
+  const isTH = (window.isTH ? window.isTH() : (localStorage.getItem("fs_lang")||"en")==="th");
+  const hud = await fetch("/api/hud").then(r=>r.json()).catch(()=>({}));
+  if(hud.cust !== undefined){
+    const kc=$("k-cust");if(kc)kc.textContent=hud.cust;
+    const ks=$("k-staff");if(ks)ks.textContent=hud.seller;
+    const ka=$("k-alert");if(ka)ka.textContent=hud.alert;
+    const hc=$("h-cust");if(hc)hc.textContent=hud.cust;
+    const hs=$("h-staff");if(hs)hs.textContent=hud.seller;
+    const ha=$("h-alert");if(ha)ha.textContent=hud.alert;
+  }
+  if(_camView==="grid" && hud.cams){
+    for(const cam of _cameras){
+      const h = hud.cams[cam.id]||{};
+      const hudEl = document.getElementById(`grid-hud-${cam.id}`);
+      if(hudEl) hudEl.innerHTML =
+        `<span>${h.cust||0} ${t("hud_customers","customers")}</span>
+         <span>${h.seller||0} ${t("hud_staff","staff")}</span>
+         <span>${h.alert||0} ${t("hud_alerts","alerts")}</span>`;
+    }
+  }
+}
+
+function startCamPolling(){
+  _pollRunning = true;
+  if(_camView === "tab"){
+    _connectMjpeg(_activeCam, "live-stream");
+  } else {
+    for(const cam of _cameras) _connectGridMjpeg(cam.id);
+  }
+  if(!window._camPollInterval)
+    window._camPollInterval = setInterval(pollAllCams, 1000);
+  pollAllCams();
+}
+
+function stopCamPolling(){
+  _pollRunning = false;
+  clearInterval(window._camPollInterval);
+  window._camPollInterval = null;
+  const ls = document.getElementById("live-stream");
+  if(ls){ ls.src=""; ls.style.display="none"; }
+  const fo = document.getElementById("feed-off");
+  if(fo) fo.style.display="flex";
+  document.querySelectorAll("img[id^='grid-stream-']").forEach(img=>{
+    img.src=""; img.style.display="none";
+    const offEl = document.getElementById(img.id.replace("grid-stream-","grid-off-"));
+    if(offEl) offEl.style.display="flex";
+  });
+}
+// ── End Multi-Camera Manager ───────────────────────────────────────────────────
+
+// ── Behavior Templates ────────────────────────────────────────────────────────
+const BEH_TEMPLATES = {
+  retail:{ en:{name:"Retail Shop",desc:"General retail — tracks browsing, interest, checkout queue and loitering."}, th:{name:"ร้านค้าปลีก",desc:"ร้านค้าทั่วไป — ติดตามการเดินเลือก ความสนใจ คิวชำระเงิน และการยืนนาน"},
+    behaviors:[{id:"browsing",name:"Browsing",name_th:"เดินเลือกสินค้า",zone:"any",action:"moving",threshold:0,alert:false,color:"#888888"},{id:"interested",name:"Interested",name_th:"สนใจสินค้า",zone:"product",action:"dwell",threshold:25,alert:true,color:"#f59e0b"},{id:"loitering",name:"Loitering",name_th:"ยืนนานผิดปกติ",zone:"product",action:"dwell",threshold:90,alert:true,color:"#ef4444"},{id:"checkout",name:"Checkout ready",name_th:"รอชำระเงิน",zone:"checkout",action:"dwell",threshold:5,alert:true,color:"#22c55e"},{id:"queue_long",name:"Long queue",name_th:"คิวยาวนาน",zone:"checkout",action:"dwell",threshold:120,alert:true,color:"#ef4444"},{id:"staff",name:"Staff",name_th:"พนักงาน",zone:"staff",action:"presence",threshold:0,alert:false,color:"#d4a800"}]},
+  restaurant:{ en:{name:"Restaurant",desc:"Dine-in restaurant — monitors seating wait times, table occupancy and entrance flow."}, th:{name:"ร้านอาหาร",desc:"ร้านอาหาร — ติดตามเวลารอที่นั่ง การใช้โต๊ะ และการเข้าออกร้าน"},
+    behaviors:[{id:"entering",name:"Entering",name_th:"เข้าร้าน",zone:"entrance",action:"presence",threshold:0,alert:false,color:"#22c55e"},{id:"waiting",name:"Waiting seat",name_th:"รอที่นั่ง",zone:"entrance",action:"dwell",threshold:60,alert:true,color:"#f59e0b"},{id:"seated",name:"Seated",name_th:"นั่งรับประทาน",zone:"seating",action:"dwell",threshold:5,alert:false,color:"#d4a800"},{id:"long_seated",name:"Long stay",name_th:"นั่งนานเกิน",zone:"seating",action:"dwell",threshold:90,alert:true,color:"#f59e0b"},{id:"need_help",name:"Needs service",name_th:"ต้องการบริการ",zone:"seating",action:"still",threshold:180,alert:true,color:"#ef4444"},{id:"staff",name:"Staff",name_th:"พนักงาน",zone:"staff",action:"presence",threshold:0,alert:false,color:"#888888"}]},
+  wineshop:{ en:{name:"Wine Shop",desc:"Wine & spirits — tracks tasting area dwell time, interest in premium products."}, th:{name:"ร้านไวน์",desc:"ร้านไวน์และเครื่องดื่ม — ติดตามเวลาชิมไวน์ ความสนใจสินค้า premium"},
+    behaviors:[{id:"browsing",name:"Browsing",name_th:"เดินเลือก",zone:"any",action:"moving",threshold:0,alert:false,color:"#888888"},{id:"tasting",name:"Tasting",name_th:"กำลังชิม",zone:"product",action:"dwell",threshold:30,alert:false,color:"#a78bfa"},{id:"interested",name:"High interest",name_th:"สนใจมาก",zone:"product",action:"dwell",threshold:60,alert:true,color:"#f59e0b"},{id:"premium",name:"Premium zone",name_th:"โซน Premium",zone:"product",action:"dwell",threshold:45,alert:true,color:"#d4a800"},{id:"checkout",name:"Checkout",name_th:"ชำระเงิน",zone:"checkout",action:"dwell",threshold:5,alert:true,color:"#22c55e"},{id:"loitering",name:"Loitering",name_th:"ยืนนานผิดปกติ",zone:"any",action:"dwell",threshold:300,alert:true,color:"#ef4444"}]},
+  exhibition:{ en:{name:"Exhibition",desc:"Trade show / museum — tracks exhibit engagement, crowd flow and dwell at displays."}, th:{name:"นิทรรศการ",desc:"งานแสดงสินค้า / พิพิธภัณฑ์ — ติดตามการมีส่วนร่วม การไหลของฝูงชน และเวลาที่จุดแสดง"},
+    behaviors:[{id:"viewing",name:"Viewing",name_th:"กำลังชม",zone:"product",action:"dwell",threshold:10,alert:false,color:"#d4a800"},{id:"engaged",name:"Engaged",name_th:"มีส่วนร่วมสูง",zone:"product",action:"dwell",threshold:60,alert:false,color:"#22c55e"},{id:"crowded",name:"Crowded spot",name_th:"จุดแออัด",zone:"product",action:"dwell",threshold:120,alert:true,color:"#f59e0b"},{id:"blocking",name:"Blocking",name_th:"ขวางทางเดิน",zone:"entrance",action:"dwell",threshold:30,alert:true,color:"#ef4444"},{id:"passing",name:"Passing by",name_th:"เดินผ่าน",zone:"any",action:"moving",threshold:0,alert:false,color:"#aaaaaa"},{id:"staff",name:"Staff",name_th:"เจ้าหน้าที่",zone:"staff",action:"presence",threshold:0,alert:false,color:"#888888"}]},
+  cafe:{ en:{name:"Cafe",desc:"Coffee shop — monitors queue at counter, table turnover and long-stay customers."}, th:{name:"คาเฟ่",desc:"ร้านกาแฟ — ติดตามคิวหน้าเคาน์เตอร์ การหมุนเวียนโต๊ะ และลูกค้าที่นั่งนาน"},
+    behaviors:[{id:"ordering",name:"Ordering",name_th:"สั่งสินค้า",zone:"checkout",action:"dwell",threshold:5,alert:false,color:"#22c55e"},{id:"queue_long",name:"Long queue",name_th:"คิวยาว",zone:"checkout",action:"dwell",threshold:90,alert:true,color:"#ef4444"},{id:"seated",name:"Seated",name_th:"นั่งในร้าน",zone:"seating",action:"dwell",threshold:5,alert:false,color:"#d4a800"},{id:"long_stay",name:"Long stay",name_th:"นั่งนาน (>2hr)",zone:"seating",action:"dwell",threshold:120,alert:true,color:"#f59e0b"},{id:"browsing",name:"Browsing menu",name_th:"ดูเมนู",zone:"product",action:"dwell",threshold:15,alert:false,color:"#888888"},{id:"staff",name:"Staff",name_th:"บาริสต้า",zone:"staff",action:"presence",threshold:0,alert:false,color:"#a78bfa"}]},
+  supermarket:{ en:{name:"Supermarket",desc:"Large retail — tracks aisle browsing, product interest, checkout queue and staff coverage."}, th:{name:"ซูเปอร์มาร์เก็ต",desc:"ร้านค้าขนาดใหญ่ — ติดตามการเดินในช่อง สินค้าน่าสนใจ คิวชำระเงิน และพนักงาน"},
+    behaviors:[{id:"browsing",name:"Browsing",name_th:"เดินเลือกสินค้า",zone:"any",action:"moving",threshold:0,alert:false,color:"#888888"},{id:"interested",name:"Interested",name_th:"สนใจสินค้า",zone:"product",action:"dwell",threshold:30,alert:false,color:"#f59e0b"},{id:"checkout",name:"Checkout",name_th:"รอชำระเงิน",zone:"checkout",action:"dwell",threshold:5,alert:true,color:"#22c55e"},{id:"queue_alert",name:"Queue alert",name_th:"คิวยาวเกิน",zone:"checkout",action:"dwell",threshold:180,alert:true,color:"#ef4444"},{id:"need_help",name:"Needs help",name_th:"ต้องการความช่วยเหลือ",zone:"any",action:"still",threshold:60,alert:true,color:"#f97316"},{id:"staff",name:"Staff",name_th:"พนักงาน",zone:"staff",action:"presence",threshold:0,alert:false,color:"#d4a800"}]},
+};
+async function applyTemplate(key){
+  const tmpl=BEH_TEMPLATES[key]; if(!tmpl) return;
+  const isTH = (window.isTH ? window.isTH() : (localStorage.getItem("fs_lang")||"en")==="th");
+  const info=isTH?tmpl.th:tmpl.en;
+  if(!confirm(`${t("c_reset_beh","Reset?").replace("?","")} "${info.name}"?`)) return;
+  const newB=tmpl.behaviors.map(b=>({id:b.id,name:isTH?b.name_th:b.name,zone:b.zone,action:b.action,threshold:b.threshold,alert:b.alert,color:b.color}));
+  await fetch("/api/behaviors/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(newB)});
+  document.querySelectorAll(".tmpl-chip").forEach(c=>c.classList.remove("active"));
+  const chip=document.querySelector(`.tmpl-chip[data-tmpl="${key}"]`);
+  if(chip) chip.classList.add("active");
+  const desc=document.getElementById("tmpl-desc");
+  if(desc){desc.textContent=info.desc;desc.style.display="block";}
+  await loadBehaviors();
+  toast(`Applied "${info.name}" ✓`);
+}
+// ── End Behavior Templates ─────────────────────────────────────────────────────
+
 let behaviors=[], behEditIdx=-1;
 async function loadBehaviors(){
   behaviors=await fetch("/api/behaviors").then(r=>r.json()).catch(()=>[]);
   buildColorPalette("beh-colors",COLORS[0]);
   renderBehList();
 }
+// Lookup maps for translating behavior zone/action values
+const ZONE_KEYS = {any:"opt_any_zone",product:"opt_product_area",checkout:"cat_checkout",
+  seating:"cat_seating",staff:"opt_staff_area",entrance:"cat_entrance",floor:"opt_floor"};
+const ACTION_KEYS = {dwell:"opt_dwell",still:"opt_still",moving:"opt_moving",presence:"opt_presence"};
+
 function renderBehList(){
   const el=$("beh-list");
   if(!behaviors.length){el.innerHTML='<div class="empty">No behaviors</div>';return;}
-  el.innerHTML=behaviors.map((b,i)=>`
+  el.innerHTML=behaviors.map((b,i)=>{
+    const zoneLbl = t(ZONE_KEYS[b.zone]||b.zone, b.zone);
+    const actLbl  = t(ACTION_KEYS[b.action]||b.action, b.action);
+    return `
     <div class="beh-item">
       <div class="beh-color" style="background:${b.color||'#888'}"></div>
       <div class="beh-info">
         <div class="beh-name">${b.name}</div>
-        <div class="beh-meta">${b.zone} · ${b.action}${b.threshold>0?' · '+b.threshold+'s':''}</div>
+        <div class="beh-meta">${zoneLbl} · ${actLbl}${b.threshold>0?' · '+b.threshold+'s':''}</div>
       </div>
-      ${b.alert?'<span class="badge badge-red">Alert</span>':''}
+      ${b.alert?`<span class="badge badge-red">${t("col_alert","Alert")}</span>`:''}
       <button class="icon-btn" onclick="editBeh(${i})" title="Edit">
         <svg viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
       </button>
       <button class="icon-btn" onclick="deleteBeh(${i})" title="Delete">
         <svg viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
       </button>
-    </div>`).join("");
-  el.innerHTML += `<button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="clearBehForm()">+ Add Behavior</button>`;
+    </div>`;
+  }).join("");
+  el.innerHTML += `<button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="clearBehForm()">+ ${t("lbl_add_beh","Add Behavior")}</button>`;
 }
 function editBeh(i){
   const b=behaviors[i]; behEditIdx=i;
-  $("beh-form-title").textContent="Edit Behavior";
+  $("beh-form-title").textContent=t("lbl_edit_beh","Edit Behavior");
   $("beh-edit-id").value=b.id||"";
   $("beh-name").value=b.name||"";
   $("beh-zone").value=b.zone||"any";
@@ -820,7 +1358,7 @@ function editBeh(i){
   buildColorPalette("beh-colors",b.color||COLORS[0]);
 }
 function clearBehForm(){
-  behEditIdx=-1; $("beh-form-title").textContent="Add Behavior";
+  behEditIdx=-1; $("beh-form-title").textContent=t("lbl_add_beh","Add Behavior");
   $("beh-name").value=""; $("beh-zone").value="any";
   $("beh-action").value="dwell"; $("beh-threshold").value=20;
   $("beh-dur-val").textContent=20; $("beh-alert").checked=true;
@@ -828,7 +1366,7 @@ function clearBehForm(){
 }
 async function saveBehavior(){
   const name=$("beh-name").value.trim();
-  if(!name){toast("Enter a behavior name","err");return;}
+  if(!name){toast(t("t_beh_name"),"err");return;}
   const beh={
     id: $("beh-edit-id").value||("b_"+Date.now()),
     name, zone:$("beh-zone").value,
@@ -840,54 +1378,57 @@ async function saveBehavior(){
   if(behEditIdx>=0) behaviors[behEditIdx]=beh;
   else behaviors.push(beh);
   await fetch("/api/behaviors/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(behaviors)});
-  toast("Behavior saved ✓"); clearBehForm(); renderBehList();
+  toast(t("t_beh_saved")); clearBehForm(); renderBehList();
 }
 async function deleteBeh(i){
   confirm_(`Delete "${behaviors[i].name}"?`,"Remove this behavior rule.",async()=>{
     behaviors.splice(i,1);
     await fetch("/api/behaviors/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(behaviors)});
-    toast("Deleted"); renderBehList();});
+    toast(t("t_beh_del")); renderBehList();});
 }
 async function resetBehaviors(){
-  confirm_("Reset behaviors?","Restore all default behavior rules.",async()=>{
+  confirm_(t("c_reset_beh"),t("c_reset_beh"),async()=>{
     await fetch("/api/behaviors/reset",{method:"POST"});
-    await loadBehaviors(); toast("Reset to defaults");});
+    await loadBehaviors(); toast(t("t_beh_reset"));});
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────────
 async function loadSettings(){
-  const[s,b]=await Promise.all([
-    fetch("/api/settings").then(r=>r.json()).catch(()=>({})),
-    fetch("/api/brand").then(r=>r.json()).catch(()=>({})),
-  ]);
-  if(s.rtsp_url) $("s-rtsp").value=s.rtsp_url;
+  const s=await fetch("/api/settings").then(r=>r.json()).catch(()=>({}));
   if(s.conf!=null) $("s-conf").value=s.conf;
   if(s.gemini_api_key) $("s-gemini").value=s.gemini_api_key;
   if(s.claude_api_key) $("s-claude").value=s.claude_api_key;
   $("s-anon").checked=!!s.anonymize;
-  if(b.name) $("s-brand").value=b.name;
-  if(b.tagline) $("s-tagline").value=b.tagline;
 }
 async function saveSettings(){
   const settings={
-    rtsp_url:$("s-rtsp").value, conf:+$("s-conf").value,
+    conf:+$("s-conf").value,
     anonymize:$("s-anon").checked,
     gemini_api_key:$("s-gemini").value, claude_api_key:$("s-claude").value,
   };
-  const brand={name:$("s-brand").value||"FlowSight",tagline:$("s-tagline").value||""};
-  await Promise.all([
-    fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(settings)}),
-    fetch("/api/brand/save",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(brand)}),
-  ]);
-  $("nav-brand").innerHTML=`<div class="brand-dot"></div>${brand.name}`;
-  document.title=brand.name;
-  toast("Settings saved ✓");
+  await fetch("/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(settings)});
+  toast(t("t_set_saved"));
 }
 
 // ── Heat Map ──────────────────────────────────────────────────────────────────
 let hmTimer = null;
+let _hmCam = "cam_0";
+
+function hmPopulateCamSelect(){
+  const sel=$("hm-cam-select");
+  if(!sel) return;
+  const cams=_cameras&&_cameras.length?_cameras:[{id:"cam_0",name:"Camera 1"}];
+  sel.innerHTML=cams.map(c=>`<option value="${c.id}"${c.id===_hmCam?" selected":""}>${c.name||c.id}</option>`).join("");
+}
+
+function onHeatmapCamChange(){
+  _hmCam=$("hm-cam-select")?.value||"cam_0";
+  refreshHeatmap();
+}
 
 function startHeatmapPoll(){
+  if(_activeCam) _hmCam=_activeCam;
+  hmPopulateCamSelect();
   if(hmTimer) return;
   hmTimer = setInterval(refreshHeatmap, 5000);
   refreshHeatmap();
@@ -897,8 +1438,8 @@ function stopHeatmapPoll(){ clearInterval(hmTimer); hmTimer=null; }
 function refreshHeatmap(){
   const alpha = Math.round(($("hm-alpha")?.value||50)/100*100);
   const img = $("heatmap-img");
-  if(img) img.src = `/api/heatmap/jpeg?alpha=${alpha/100}&t=${Date.now()}`;
-  fetch("/api/heatmap/zones").then(r=>r.json()).then(zones=>{
+  if(img) img.src = `/api/heatmap/jpeg?cam=${_hmCam}&alpha=${alpha/100}&t=${Date.now()}`;
+  fetch(`/api/heatmap/zones?cam=${_hmCam}`).then(r=>r.json()).then(zones=>{
     const el=$("hm-zones");
     if(!el) return;
     if(!zones.length){el.innerHTML='<div class="empty">No zone data yet</div>';return;}
@@ -917,17 +1458,236 @@ function refreshHeatmap(){
 }
 
 function resetHeatmap(){
-  fetch("/api/heatmap/reset",{method:"POST"}).then(()=>{ refreshHeatmap(); toast("Heat map reset"); });
+  fetch("/api/heatmap/reset",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({cam:_hmCam})}).then(()=>{ refreshHeatmap(); toast(t("t_hm_reset")); });
 }
+
+// ── Subscription ──────────────────────────────────────────────────────────────
+
+
+// ── AI Insight (no auth required) ────────────────────────────────────────────
+async function loadInsight(){
+  const panel = document.getElementById("insight-content");
+  const srcEl = document.getElementById("insight-src");
+  if(panel){ panel.style.display = "block"; panel.innerHTML = "⏳ Generating..."; }
+  if(srcEl) srcEl.style.display = "block";
+  const date = $("rpt-date")?.value || new Date().toISOString().slice(0,10);
+  const r = await fetch(`/api/insight?date=${date}`)
+    .then(res=>res.json()).catch(()=>({ok:false}));
+  if(srcEl) srcEl.textContent = r.source || "AI Analysis";
+  if(panel) panel.innerHTML = r.html || "<span style='color:var(--muted)'>No data available</span>";
+}
+
+// ── Activity Log ──────────────────────────────────────────────────────────────
+let _actPage = 1;
+async function loadActivity(page){
+  page=Math.max(1,page||1); _actPage=page;
+  const date=document.getElementById("rpt-date")?.value||"";
+  const behavior=document.getElementById("act-behavior")?.value||"";
+  const zone=document.getElementById("act-zone")?.value||"";
+  const alert=document.getElementById("act-alert")?.value||"";
+  const tbody=document.getElementById("act-tbody");
+  if(tbody) tbody.innerHTML=`<tr><td colspan="5" style="padding:32px;text-align:center;color:var(--muted)">${t("lbl_loading","Loading...")}</td></tr>`;
+  const params=new URLSearchParams({page,per_page:50});
+  if(date) params.set("date",date); if(behavior) params.set("behavior",behavior);
+  if(zone) params.set("zone",zone); if(alert) params.set("alert",alert);
+  const [d,s]=await Promise.all([
+    fetch(`/api/activity?${params}`).then(r=>r.json()).catch(()=>({ok:false,events:[],total:0,pages:1})),
+    fetch(`/api/activity/summary?date=${date}`).then(r=>r.json()).catch(()=>({ok:false,total:0,interested:0,alerts:0,top_zone:"—"}))
+  ]);
+  // Counter cards
+  const el=id=>document.getElementById(id);
+  if(el("cnt-total")) el("cnt-total").textContent=s.total?.toLocaleString()||"0";
+  if(el("cnt-interested")) el("cnt-interested").textContent=s.interested?.toLocaleString()||"0";
+  if(el("cnt-interested-pct")) el("cnt-interested-pct").textContent=s.total?`${s.interested_pct}% ${t("cnt_of_visitors","of visitors")}`:"";
+  if(el("cnt-alerts")) el("cnt-alerts").textContent=s.alerts?.toLocaleString()||"0";
+  if(el("cnt-top-zone")) el("cnt-top-zone").textContent=s.top_zone||"—";
+  if(el("cnt-top-zone-count")&&s.top_zone_count) el("cnt-top-zone-count").textContent=`${s.top_zone_count} ${t("hud_alerts","events")}`;
+  // Filters — preserve value after rebuild
+  _updateActDropdown("act-behavior",d.behaviors||[],t("opt_all_beh","All behaviors"));
+  _updateActDropdown("act-zone",d.zones||[],t("opt_all_zones","All zones"));
+  if(behavior) document.getElementById("act-behavior").value=behavior;
+  if(zone) document.getElementById("act-zone").value=zone;
+  // Summary
+  const tl=el("act-total-lbl");
+  if(tl) tl.textContent=`${d.total?.toLocaleString()||0} ${t("lbl_no_activity","events found").replace("No events found","events found")}`;
+  // Table
+  if(!tbody) return;
+  if(!d.events?.length){
+    tbody.innerHTML=`<tr><td colspan="5" style="padding:32px;text-align:center;color:var(--muted)">${t("lbl_no_activity","No events found")}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML=d.events.map(e=>`<tr style="border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+    <td style="padding:9px 12px;color:var(--muted);font-family:monospace">${e.time}</td>
+    <td style="padding:9px 12px;font-weight:500">#${e.person_id}</td>
+    <td style="padding:9px 12px"><span style="background:var(--surface2);padding:2px 8px;border-radius:4px;font-size:11px">${e.zone}</span></td>
+    <td style="padding:9px 12px">${e.behavior}</td>
+    <td style="padding:9px 12px;text-align:center">${e.alert?`<span style="background:#fef2f2;color:#ef4444;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">⚠ ${t("col_alert","Alert")}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
+  </tr>`).join("");
+  const pi=el("act-page-info");
+  if(pi) pi.textContent=`${t("btn_prev","Page").replace("←","").trim()} ${page} / ${d.pages}`;
+  const pb=el("act-prev"); if(pb) pb.disabled=page<=1;
+  const nb=el("act-next"); if(nb) nb.disabled=page>=d.pages;
+}
+function _updateActDropdown(id,items,allLabel){
+  const sel=document.getElementById(id); if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML=`<option value="">${allLabel}</option>`+items.map(v=>`<option value="${v}">${v}</option>`).join("");
+  if(cur) sel.value=cur;
+}
+function clearActivityFilters(){
+  // act-date removed — date is shared via rpt-date
+  const b=document.getElementById("act-behavior"); if(b) b.value="";
+  const z=document.getElementById("act-zone"); if(z) z.value="";
+  const a=document.getElementById("act-alert"); if(a) a.value="";
+  loadActivity(1);
+}
+async function exportActivityCSV(){
+  const date=document.getElementById("rpt-date")?.value||"";
+  const behavior=document.getElementById("act-behavior")?.value||"";
+  const zone=document.getElementById("act-zone")?.value||"";
+  const alert=document.getElementById("act-alert")?.value||"";
+  const params=new URLSearchParams({page:1,per_page:10000});
+  if(date) params.set("date",date); if(behavior) params.set("behavior",behavior);
+  if(zone) params.set("zone",zone); if(alert) params.set("alert",alert);
+  const d=await fetch(`/api/activity?${params}`).then(r=>r.json()).catch(()=>({events:[]}));
+  if(!d.events?.length){toast(t("t_no_data","No data to export"),"err");return;}
+  const header="Time,Date,Person ID,Zone,Behavior,Alert\n";
+  const rows=d.events.map(e=>`${e.time},${e.date},#${e.person_id},"${e.zone}","${e.behavior}",${e.alert?"Yes":"No"}`).join("\n");
+  const blob=new Blob([header+rows],{type:"text/csv"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download=`flowsight_activity_${date||"all"}.csv`; a.click();
+  URL.revokeObjectURL(url); toast(t("t_exported","Exported ✓"));
+}
+// ── End Activity Log ──────────────────────────────────────────────────────────
 
 // ── Init ───────────────────────────────────────────────────────────────────────
 $("rpt-date").value=new Date().toISOString().slice(0,10);
+const _actDateEl=null; // merged — uses rpt-date
+if(_actDateEl) _actDateEl.value=new Date().toISOString().slice(0,10);
+// act-date removed — rpt-date is the shared date picker
 loadSettings();
+loadCameras().then(()=>setCamView(_camView));
 fetch("/api/brand").then(r=>r.json()).then(b=>{
-  if(b.name){$("nav-brand").innerHTML=`<div class="brand-dot"></div>${b.name}`;document.title=b.name;}
+  if(b.name){$("nav-brand").innerHTML=`<svg class="brand-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">  <defs>    <linearGradient id="fg1" x1="0%" y1="0%" x2="100%" y2="100%">      <stop offset="0%" style="stop-color:#4dd0c4"/>      <stop offset="100%" style="stop-color:#1a5f7a"/>    </linearGradient>  </defs>  <!-- Eye shape -->  <path d="M4 13 Q16 4 28 13 Q16 22 4 13Z" fill="none" stroke="url(#fg1)" stroke-width="2" stroke-linejoin="round"/>  <!-- Pupil -->  <circle cx="16" cy="13" r="4" fill="url(#fg1)"/>  <circle cx="17" cy="12" r="1.2" fill="rgba(255,255,255,0.5)"/>  <!-- Flow lines -->  <path d="M6 20 Q10 18 14 21 Q18 24 22 21" fill="none" stroke="url(#fg1)" stroke-width="1.8" stroke-linecap="round"/>  <path d="M8 24 Q12 22 16 25 Q19 27 22 25" fill="none" stroke="url(#fg1)" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/></svg>${b.name}`;document.title=b.name;}
 });
 pollHud(); pollAlerts(); pollStats();
 setInterval(pollHud,1500); setInterval(pollAlerts,3000); setInterval(pollStats,15000);
+</script>
+<script src="translations.js" onload="window._translationsReady=true"></script>
+<script>
+// ── i18n Engine — instant no-reload language switch ───────────────────────────
+(function(){
+  var _L = localStorage.getItem("fs_lang") || "en";
+
+  function _T(key, fallback){
+    var d = window.FS_LANG[_L] || {};
+    return d[key] || (window.FS_LANG.en||{})[key] || fallback || key;
+  }
+  window.t = _T;
+
+  window.applyLang = function applyLang(){
+    // 1. data-i18n elements
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      var key = el.getAttribute("data-i18n");
+      var val = _T(key);
+      if(val) el.textContent = val;
+    });
+    // 2. Nav tab text nodes (plain text inside .ntab buttons)
+    var tabMap = {
+      live:"nav_live", dash:"nav_dashboard", zones:"nav_zones",
+      behaviors:"nav_behaviors", heatmap:"nav_heatmap",
+      settings:"nav_settings"
+    };
+    document.querySelectorAll(".ntab").forEach(function(btn){
+      var fn = btn.getAttribute("onclick")||"";
+      var m  = fn.match(/showPage\('(\w+)'/);
+      if(!m) return;
+      var key = tabMap[m[1]];
+      if(!key) return;
+      var val = _T(key);
+      // Find and replace text node
+      for(var i=0; i<btn.childNodes.length; i++){
+        var node = btn.childNodes[i];
+        if(node.nodeType===3 && node.textContent.trim()){
+          node.textContent = " "+val+" "; break;
+        }
+      }
+    });
+    // 3. Status label
+    var sLbl = document.getElementById("status-lbl");
+    if(sLbl){
+      var running = sLbl.closest && sLbl.textContent.trim() !== _T("status_stopped");
+      // preserve current state
+      var isRunning = !["Stopped","หยุดทำงาน"].includes(sLbl.textContent.trim());
+      sLbl.textContent = isRunning ? _T("status_running") : _T("status_stopped");
+    }
+    // 4. Start/Stop button
+    var mainBtn = document.getElementById("main-btn");
+    if(mainBtn){
+      var span = mainBtn.querySelector("span[data-i18n]");
+      if(span){
+        var isStop = ["btn_stop","⏹ Stop","⏹ หยุด"].some(function(v){
+          return span.textContent.includes("หยุด")||span.textContent.includes("Stop");
+        });
+        span.textContent = isStop ? _T("btn_stop") : _T("btn_start");
+      }
+    }
+    // 5. lang-select
+    var sel = document.getElementById("lang-select");
+    if(sel) sel.value = _L;
+    // 6. html lang attribute
+    document.documentElement.lang = _L;
+    // 7. placeholder attributes
+    document.querySelectorAll("[data-i18n-ph]").forEach(function(el){
+      var val = _T(el.getAttribute("data-i18n-ph"));
+      if(val) el.placeholder = val;
+    });
+    // 8. select <option> tags with data-i18n
+    document.querySelectorAll("select option[data-i18n]").forEach(function(el){
+      var val = _T(el.getAttribute("data-i18n"));
+      if(val) el.textContent = val;
+    });
+    // 9. tip-box uses innerHTML so line breaks survive — re-render with <br>
+    document.querySelectorAll(".tip-box[data-i18n]").forEach(function(el){
+      var key = el.getAttribute("data-i18n");
+      var raw = _T(key);
+      if(raw) el.innerHTML = raw.replace(/\|/g,"<br>");
+    });
+  }
+
+  window.setLang = function(lang){
+    if(lang !== "en" && lang !== "th") return;
+    _L = lang;
+    localStorage.setItem("fs_lang", lang);
+    applyLang();
+    // Re-render all dynamic content
+    if(typeof loadCameras === "function") loadCameras();
+    if(typeof renderCamManagerList === "function") renderCamManagerList();
+    if(typeof renderCamGrid === "function") renderCamGrid();
+    if(typeof loadBehaviors === "function" && document.getElementById("pg-behaviors")?.classList.contains("on")) loadBehaviors();
+    if(typeof loadDash === "function" && document.getElementById("pg-dash")?.classList.contains("on")){ loadDash(); loadActivity(1); }
+    // Refresh active page dynamic content
+    var activePage = document.querySelector(".page.on");
+    if(activePage && activePage.id === "pg-dash" && typeof loadActivity === "function") loadActivity(_actPage||1);
+  };
+
+  window.toggleLang = function(){
+    window.setLang(_L === "en" ? "th" : "en");
+  };
+  // Global helper - replaces localStorage.getItem checks throughout app
+  window.isTH = function(){ return _L === "th"; };
+
+  // Apply on load — translations.js loads synchronously before this block
+  function safeApply(){
+    if(window.FS_LANG){ applyLang(); }
+    else { setTimeout(safeApply, 20); }  // fallback poll just in case
+  }
+  // Run immediately — DOM is ready and translations.js already executed
+  safeApply();
+  // Also re-apply after full page load to catch any late-rendered elements
+  window.addEventListener("load", function(){ applyLang(); });
+})();
+// ── End i18n ──────────────────────────────────────────────────────────────────
 </script>
 </body>
 </html>

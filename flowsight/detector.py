@@ -13,8 +13,8 @@ class PersonDetector:
     def __init__(self, model_path: str = "yolov8n.pt", conf: float = 0.4, device: str = "cpu"):
         self.model  = YOLO(model_path)
         self.conf   = conf
-        self.device = device
-        print(f"[PersonDetector] model={model_path}  conf={conf}  device={device}")
+        self.device = "cpu"
+        print(f"[PersonDetector] model={model_path}  conf={conf}  device=cpu")
 
     def detect(self, frame) -> list[dict]:
         """

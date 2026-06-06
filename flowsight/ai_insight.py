@@ -30,10 +30,16 @@ def get_daily_data(db_path: str, date_filter: str = None) -> dict:
             total = q(f"SELECT COUNT(DISTINCT person_id) FROM events WHERE 1=1 {wh}", p)[0][0]
     except Exception:
         total = q(f"SELECT COUNT(DISTINCT person_id) FROM events WHERE 1=1 {wh}", p)[0][0]
-    inter   = q(f"SELECT COUNT(DISTINCT person_id) FROM events WHERE behavior='interested' {wh}", p)[0][0]
-    purch   = q(f"SELECT COUNT(DISTINCT person_id) FROM events WHERE behavior='purchasing' {wh}", p)[0][0]
-    loiter  = q(f"SELECT COUNT(DISTINCT person_id) FROM events WHERE behavior='loitering' {wh}", p)[0][0]
-    waiting = q(f"SELECT COUNT(DISTINCT person_id) FROM events WHERE behavior='waiting' {wh}", p)[0][0]
+
+    # NOTE: column is 'behavior_id', not 'behavior'
+    # 'tasting'/'in_wine_zone' = product zone, 'interested' = high interest dwell
+    # 'checkout' = reached checkout zone
+    # 'loitering' = loitering behavior id
+    # 'waiting' = waiting in seating zone
+    inter   = q(f"SELECT COUNT(DISTINCT person_id) FROM events WHERE behavior_id IN ('tasting','interested','in_wine_zone') {wh}", p)[0][0]
+    purch   = q(f"SELECT COUNT(DISTINCT person_id) FROM events WHERE behavior_id IN ('checkout','checkout_ready','purchasing') {wh}", p)[0][0]
+    loiter  = q(f"SELECT COUNT(DISTINCT person_id) FROM events WHERE behavior_id IN ('loitering','loiter') {wh}", p)[0][0]
+    waiting = q(f"SELECT COUNT(DISTINCT person_id) FROM events WHERE behavior_id IN ('waiting','waiting_too_long') {wh}", p)[0][0]
     alerts  = q(f"SELECT COUNT(*) FROM events WHERE needs_staff=1 {wh}", p)[0][0]
     dr      = q(f"""SELECT
         MIN(strftime('%H:%M',datetime(timestamp,'unixepoch','+{TZ} hours'))),
@@ -42,9 +48,9 @@ def get_daily_data(db_path: str, date_filter: str = None) -> dict:
     hourly  = q(f"""SELECT strftime('%H',datetime(timestamp,'unixepoch','+{TZ} hours')) hr,
                           COUNT(DISTINCT person_id) n
                     FROM events WHERE 1=1 {wh} GROUP BY hr ORDER BY hr""", p)
-    behs    = q(f"SELECT behavior,COUNT(*) n FROM events WHERE 1=1 {wh} GROUP BY behavior ORDER BY n DESC LIMIT 8", p)
-    zones   = q(f"""SELECT zone,COUNT(*) n FROM events WHERE zone!='floor' {wh}
-                    GROUP BY zone ORDER BY n DESC LIMIT 6""", p)
+    behs    = q(f"SELECT behavior_id,COUNT(*) n FROM events WHERE 1=1 {wh} GROUP BY behavior_id ORDER BY n DESC LIMIT 8", p)
+    zones   = q(f"""SELECT zone_name,COUNT(*) n FROM events WHERE zone!='floor' {wh}
+                    GROUP BY zone_name ORDER BY n DESC LIMIT 6""", p)
     conn.close()
 
     peak_hr = max(hourly, key=lambda r: r[1]) if hourly else ("—", 0)

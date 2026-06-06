@@ -49,6 +49,14 @@ class BehaviorLogger:
         ))
         if len(self._buf) >= self.FLUSH_EVERY:
             self._flush()
+            self._trim_seen()
+
+    def _trim_seen(self):
+        """Drop cooldown entries older than 10 minutes to prevent unbounded growth."""
+        cutoff = time.time() - 600
+        stale = [k for k, t in self._seen.items() if t < cutoff]
+        for k in stale:
+            del self._seen[k]
 
     def _flush(self):
         if not self._buf:

@@ -9,26 +9,35 @@
     "color": "#888888"
   },
   {
+    "id": "in_wine_zone",
+    "name": "In wine zone",
+    "zone": "product",
+    "action": "presence",
+    "threshold": 0,
+    "alert": false,
+    "color": "#6366f1"
+  },
+  {
+    "id": "tasting",
+    "name": "Looking for a wine",
+    "zone": "product",
+    "action": "dwell",
+    "threshold": 20,
+    "alert": false,
+    "color": "#6366f1"
+  },
+  {
     "id": "interested",
-    "name": "Interested",
+    "name": "High interest",
     "zone": "product",
     "action": "dwell",
-    "threshold": 25,
+    "threshold": 40,
     "alert": true,
-    "color": "#f59e0b"
+    "color": "rgb(245, 158, 11)"
   },
   {
-    "id": "loitering",
-    "name": "Loitering",
-    "zone": "product",
-    "action": "dwell",
-    "threshold": 90,
-    "alert": true,
-    "color": "#ef4444"
-  },
-  {
-    "id": "checkout_ready",
-    "name": "Checkout ready",
+    "id": "checkout",
+    "name": "Checkout",
     "zone": "checkout",
     "action": "dwell",
     "threshold": 5,
@@ -36,39 +45,21 @@
     "color": "#22c55e"
   },
   {
-    "id": "waiting",
-    "name": "Waiting too long",
-    "zone": "seating",
+    "id": "loitering",
+    "name": "Loitering",
+    "zone": "any",
     "action": "dwell",
-    "threshold": 180,
+    "threshold": 300,
     "alert": true,
     "color": "#ef4444"
   },
   {
-    "id": "staff",
-    "name": "Staff",
-    "zone": "staff",
-    "action": "presence",
-    "threshold": 0,
-    "alert": false,
-    "color": "#f59e0b"
-  },
-  {
-    "id": "idle",
-    "name": "Idle",
-    "zone": "floor",
-    "action": "still",
-    "threshold": 0,
-    "alert": false,
-    "color": "#555555"
-  },
-  {
-    "id": "moving",
-    "name": "Moving",
-    "zone": "floor",
-    "action": "moving",
-    "threshold": 0,
-    "alert": false,
-    "color": "#aaaaaa"
+    "id": "waiting",
+    "name": "Waiting",
+    "zone": "seating",
+    "action": "dwell",
+    "threshold": 20,
+    "alert": true,
+    "color": "#f97316"
   }
 ]

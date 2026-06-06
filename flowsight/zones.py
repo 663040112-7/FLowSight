@@ -1,4 +1,14 @@
-# zones.py — FlowSight Zone Manager  v1.1
+# =============================================================================
+# zones.py — FlowSight Zone Manager  v1.2
+#
+# Changes from v1.1:
+#   - _load(): reads _meta.w/_meta.h to record the authoring resolution at
+#     which zone polygons were drawn (default 960×540 if absent).
+#   - get_zone_and_cat(): accepts optional frame_w/frame_h; scales the query
+#     point from native frame space into authoring space before the
+#     pointPolygonTest, fixing systematic zone mis-assignment on cameras that
+#     don't stream at exactly the authoring resolution.
+# =============================================================================
 import cv2, json, logging
 import numpy as np
 from pathlib import Path
@@ -47,13 +57,26 @@ def get_priority(category: str) -> int:
 
 class ZoneManager:
     """
-    New format (zones_config.json):
-      {"cam_0": {"zone_id": {"name":"..","category":"product","color":"#hex","points":[[x,y]..]}}}
-    Legacy format (list of points) is auto-migrated on load.
+    Expected zones_config.json format:
+      {
+        "_meta": {"w": 960, "h": 540},          ← authoring resolution
+        "cam_0": {
+          "zone_id": {
+            "name": "…", "category": "product",
+            "color": "#hex", "points": [[x,y], …]
+          }
+        }
+      }
+
+    Legacy format (list of points per zone) is auto-migrated on load.
+    Older files without _meta default to 960×540.
     """
+
     def __init__(self, config_path: str = ZONES_CONFIG):
         self.cameras:    dict[str, dict[str, np.ndarray]] = {}
         self.zones_meta: dict[str, dict[str, dict]]       = {}
+        self._author_w:  int = 960
+        self._author_h:  int = 540
         if Path(config_path).exists():
             try:
                 self._load(config_path)
@@ -72,37 +95,67 @@ class ZoneManager:
     def _load(self, config_path: str):
         with open(config_path, encoding="utf-8") as f:
             raw = json.load(f)
+
+        # Read authoring resolution — falls back to 960×540 for older files
+        meta = raw.get("_meta", {})
+        self._author_w = int(meta.get("w", 960))
+        self._author_h = int(meta.get("h", 540))
+
         for cam_key, zones in raw.items():
+            if cam_key == "_meta":
+                continue
             self.cameras[cam_key]    = {}
             self.zones_meta[cam_key] = {}
             for zone_id, zone_data in zones.items():
                 if isinstance(zone_data, list):
-                    pts = zone_data
-                    cat = self._infer_category(zone_id)
-                    meta = {"name":     zone_id.replace("_", " ").title(),
-                            "category": cat,
-                            "color":    ZONE_CATEGORIES.get(cat, {}).get("color", "#6b7280")}
+                    pts  = zone_data
+                    cat  = self._infer_category(zone_id)
+                    zone_meta = {
+                        "name":     zone_id.replace("_", " ").title(),
+                        "category": cat,
+                        "color":    ZONE_CATEGORIES.get(cat, {}).get("color", "#6b7280"),
+                    }
                 elif isinstance(zone_data, dict):
                     pts  = zone_data.get("points", [])
-                    meta = {"name":     zone_data.get("name", zone_id),
-                            "category": zone_data.get("category", "custom"),
-                            "color":    zone_data.get("color", "#6b7280")}
+                    zone_meta = {
+                        "name":     zone_data.get("name", zone_id),
+                        "category": zone_data.get("category", "custom"),
+                        "color":    zone_data.get("color", "#6b7280"),
+                    }
                 else:
                     continue
                 if pts:
                     self.cameras[cam_key][zone_id]    = np.array(pts, dtype=np.int32)
-                    self.zones_meta[cam_key][zone_id] = meta
+                    self.zones_meta[cam_key][zone_id] = zone_meta
 
     def get_zone_and_cat(self, cx: int, cy: int,
-                         cam_key: str = "cam_0") -> tuple[str, str]:
+                          cam_key: str = "cam_0",
+                          frame_w: int | None = None,
+                          frame_h: int | None = None) -> tuple[str, str]:
+        """
+        Return (zone_id, category) for the point (cx, cy).
+
+        cx, cy are in native frame pixel coordinates.  When frame_w/frame_h
+        are provided the point is scaled into the zone-authoring space before
+        the polygon test, so zones work correctly regardless of the camera's
+        streaming resolution.
+        """
+        # Scale from native resolution into authoring resolution
+        if frame_w and frame_h and frame_w > 0 and frame_h > 0:
+            qx = cx * self._author_w / frame_w
+            qy = cy * self._author_h / frame_h
+        else:
+            qx, qy = float(cx), float(cy)
+
+        pt = (qx, qy)
         matched: list[tuple[int, str, str]] = []
-        pt = (float(cx), float(cy))
         for zid, poly in self.cameras.get(cam_key, {}).items():
             if len(poly) < 3:
                 continue
             if cv2.pointPolygonTest(poly, pt, False) >= 0:
                 cat = self.zones_meta[cam_key][zid].get("category", "custom")
                 matched.append((get_priority(cat), zid, cat))
+
         if not matched:
             return "floor", "floor"
         matched.sort(reverse=True)
@@ -113,3 +166,7 @@ class ZoneManager:
 
     def get_meta(self, cam_key: str = "cam_0") -> dict[str, dict]:
         return self.zones_meta.get(cam_key, {})
+
+    def get_author_size(self) -> tuple[int, int]:
+        """Return (width, height) of the resolution at which zones were drawn."""
+        return self._author_w, self._author_h

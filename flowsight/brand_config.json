@@ -1,4 +1,22 @@
 {
   "name": "FlowSight",
-  "tagline": "Retail Intelligence Platform"
+  "tagline": "Retail Intelligence Platform",
+  "cameras": [
+    {
+      "enabled": true,
+      "id": "cam_0",
+      "msg": "",
+      "name": "Camera 1",
+      "rtsp_url": "rtsp://wineoclock2:123456789@192.168.1.178/stream2",
+      "running": false
+    },
+    {
+      "enabled": true,
+      "id": "cam_1",
+      "msg": "",
+      "name": "Camera 2",
+      "rtsp_url": "rtsp://wineoclock:123456789@192.168.1.124/stream2",
+      "running": false
+    }
+  ]
 }

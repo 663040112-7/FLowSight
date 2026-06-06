@@ -2,12 +2,22 @@
 title FlowSight — Retail Intelligence
 cd /d "%~dp0"
 
-REM Use embedded Python if available, otherwise use system Python
+REM ── Always use bundled Python — never fall back to system Python ──────────────
 set PYTHON=%~dp0python\python.exe
-if not exist "%PYTHON%" set PYTHON=python
 
-REM Open browser after 4 seconds
-start "" /b cmd /c "timeout /t 4 /nobreak >nul && (start chrome --app=http://localhost:5000 --window-size=1360,820 2>nul || start msedge --app=http://localhost:5000 2>nul || start http://localhost:5000)"
+if not exist "%PYTHON%" (
+    echo ERROR: Bundled Python not found.
+    echo Please re-run the FlowSight installer.
+    pause
+    exit /b 1
+)
 
-REM Run FlowSight — use full path to app.py
+REM ── Set environment ───────────────────────────────────────────────────────────
+set PATH=%~dp0python;%~dp0python\Scripts;%PATH%
+set PYTHONPATH=%~dp0python\Lib\site-packages
+set KMP_DUPLICATE_LIB_OK=TRUE
+set OPENCV_LOG_LEVEL=SILENT
+set OPENCV_FFMPEG_CAPTURE_OPTIONS=rtsp_transport;tcp
+
+REM ── Launch app ────────────────────────────────────────────────────────────────
 "%PYTHON%" "%~dp0app.py"
